@@ -35,7 +35,7 @@ private static void ConfigureServices(IServiceCollection services, WebAssemblyHo
 }
 ```
 
-Add _appsettings.json_ and possible _appsettings.Development.json_ configuration files under wwwroot with the _IdentitySettings_. The scope is added as a space separated list of values.
+Add _appsettings.json_ and possible _appsettings.Development.json_ configuration files under wwwroot with the _IdentitySettings_ configuration. The scope is added as a space separated list of values.
 
 ```json
 {
@@ -47,7 +47,7 @@ Add _appsettings.json_ and possible _appsettings.Development.json_ configuration
 }
 ```
 
-Add the library `@using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect` namespace to __Imports.razor_.
+Add the library namespace `@using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect` to __Imports.razor_.
 
 ### Add call back page
 Add a _Authentication.razor_ call back page in the _Pages_ folder with the following content.
@@ -58,7 +58,7 @@ Add a _Authentication.razor_ call back page in the _Pages_ folder with the follo
 ```
 
 ### Authorize views
-Update the _App.razor_ to include _AuthorizeRouteView/NotAuthorized_ and with _OidcRedirectToLogin_. The _OidcRedirectToLogin_ start the login flow if the user do not have access.
+Update the _App.razor_ to include _AuthorizeRouteView/NotAuthorized_ with the _OidcRedirectToLogin_ element. The _OidcRedirectToLogin_ start the login flow if the user do not have access.
 
 ```html
 <Router AppAssembly="@typeof(Program).Assembly">
@@ -84,10 +84,10 @@ Update the _App.razor_ to include _AuthorizeRouteView/NotAuthorized_ and with _O
 </Router>
 ```
 
-Thereby both the _Authorize_ attribute and AuthorizeView is supported.
+Thereby both the _Authorize_ attribute and AuthorizeView are supported.
 
 ### Login / logout menu
-Possible add the _LoginDisplay.razor_ with a login / logout menu.
+Possible add the _LoginDisplay.razor_ with a login / logout menu with the following content.
 
 ```c#
 @inject OpenidConnectPkce oenidConnectPkce
