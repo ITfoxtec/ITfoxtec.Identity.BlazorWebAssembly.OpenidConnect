@@ -135,3 +135,6 @@ The _LoginDisplay_ can be added to the _MainLayout.razor_ like this.
 </div>
 
 ```
+
+### Support
+If you have questions please ask them on <a href="https://stackoverflow.com">Stack Overflow</a>. Then email a link to support@itfoxtec.com and I will answer as soon as possible.
