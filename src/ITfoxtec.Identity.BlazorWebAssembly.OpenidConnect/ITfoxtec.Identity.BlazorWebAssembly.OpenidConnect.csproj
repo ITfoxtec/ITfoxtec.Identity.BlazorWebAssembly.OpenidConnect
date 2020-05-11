@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<RazorLangVersion>3.0</RazorLangVersion>
+		<RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
+		
+		<Authors>Anders Revsgaard</Authors>
+		<Company>ITfoxtec</Company>
+		<Description>A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.</Description>
+		<PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+		<PackageIconUrl>https://itfoxtec.com/favicon.ico</PackageIconUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
+		<PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE)</PackageTags>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Copyright>© 2020 ITfoxtec</Copyright>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Blazored.SessionStorage" Version="1.0.11" />
+		<PackageReference Include="ITfoxtec.Identity" Version="1.1.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.0-preview.3.20215.14" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.0-preview.3.20215.14" />
+	</ItemGroup>
+
+</Project>
