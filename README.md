@@ -1,7 +1,7 @@
 # ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
 
-The library support login and logout with OpenID Connect (OIDC) using Proof Key for Code Exchange (PKCE) insted of a client secret.
+The library support login and logout with OpenID Connect (OIDC) using Proof Key for Code Exchange (PKCE) instead of a client secret.
 
 > Please see the [sample application](https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect/tree/master/samples) for implementation details.
 
