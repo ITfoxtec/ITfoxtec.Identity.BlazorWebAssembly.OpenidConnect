@@ -42,7 +42,7 @@ Add _appsettings.json_ and possible _appsettings.Development.json_ configuration
   "IdentitySettings": {
     "Authority": "https://...some authority.../",
     "ClientId": "...client id...",
-    "Scope": "...some authority..." 
+    "Scope": "...some scope..." 
   }
 }
 ```
