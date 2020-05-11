@@ -19,20 +19,5 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             return list;
         }
-
-        /// <summary>
-        /// Concatenates two sequences and only include each string value once.
-        /// </summary>
-        /// <param name="first">The first sequence to concatenate.</param>
-        /// <param name="second">The sequence to concatenate to the first sequence.</param>
-        public static List<string> ConcatOnce(this List<string> first, List<string> second)
-        {
-            var list = first ?? new List<string>();
-            if (second != null)
-            {
-                list.AddRange(second.Where(vc => !list.Contains(vc)));
-            }
-            return list;
-        }
     }
 }
