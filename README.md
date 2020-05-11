@@ -3,7 +3,7 @@ A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
 
 The library support login and logout with OpenID Connect (OIDC) using Proof Key for Code Exchange (PKCE) insted of a client secret.
 
-Please see the [sample application](https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect/tree/master/samples) for implementation details.
+> Please see the [sample application](https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect/tree/master/samples) for implementation details.
 
 ## Install
 Install the ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect NuGet package via the Visual Studio package manger. 
@@ -35,14 +35,14 @@ private static void ConfigureServices(IServiceCollection services, WebAssemblyHo
 }
 ```
 
-Add _appsettings.json_ and possible _appsettings.Development.json_ configuration files under wwwroot with the _IdentitySettings_.
+Add _appsettings.json_ and possible _appsettings.Development.json_ configuration files under wwwroot with the _IdentitySettings_. The scope is added as a space separated list of values.
 
 ```json
 {
   "IdentitySettings": {
     "Authority": "https://...some authority.../",
     "ClientId": "...client id...",
-    "Scope": "...some authority..." // space separated list of scopes
+    "Scope": "...some authority..." 
   }
 }
 ```
