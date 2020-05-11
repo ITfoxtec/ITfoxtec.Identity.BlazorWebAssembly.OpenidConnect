@@ -1,0 +1,23 @@
+﻿@inject OpenidConnectPkce oenidConnectPkce
+
+<AuthorizeView>
+    <Authorized>
+        Hello, @context.User.Identity.Name!
+        <button class="nav-link btn btn-link" @onclick="LogoutAsync">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <button class="nav-link btn btn-link" @onclick="LoginAsync">Log in</button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    private async Task LoginAsync(MouseEventArgs args)
+    {
+        await oenidConnectPkce.LoginAsync();
+    }
+
+    private async Task LogoutAsync(MouseEventArgs args)
+    {
+        await oenidConnectPkce.LogoutAsync();
+    }
+}

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -67,8 +68,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
                 var nameValueCollection = authenticationRequest.ToDictionary().AddToDictionary(codeChallengeRequest);
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
-                var authorizationUrl = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, nameValueCollection);
-                navigationManager.NavigateTo(authorizationUrl);
+                var authorizationUri = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, nameValueCollection);
+                navigationManager.NavigateTo(authorizationUri);
 
             }
             catch (Exception ex)
@@ -89,14 +90,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             try
             {
-                var responseSplit = responseUrl.Split(responseUrl.Contains('#') ? '#' : '?');
-                if (responseUrl.Count() <= 1)
-                {
-                    throw new SecurityException("Invalid response url.");
-                }                
-                var response = QueryHelpers.ParseQuery(responseSplit[1]).ToDictionary();
-
-                var authenticationResponse = response.ToObject<AuthenticationResponse>();
+                var responseQuery = GetResponseQuery(responseUrl);
+                var authenticationResponse = responseQuery.ToObject<AuthenticationResponse>();
                 authenticationResponse.Validate();
                 if (authenticationResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(authenticationResponse.State), authenticationResponse.GetTypeName());
 
@@ -106,13 +101,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     throw new SecurityException($"State '{authenticationResponse.State}' do not exist.");
                 }
 
-                (var expiresIn, var idTokenPrincipal, var accessToken) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
+                (var expiresIn, var idTokenPrincipal, var idToken, var accessToken) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
 
-                var sessionResponse = response.ToObject<SessionResponse>();
+                var sessionResponse = responseQuery.ToObject<SessionResponse>();
                 sessionResponse.Validate();
 
                 var validUntil = DateTimeOffset.UtcNow.AddSeconds(expiresIn).AddMinutes(globalOpenidClientPkceSettings.TokensExpiresBefore);
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).LoginAsync(validUntil, idTokenPrincipal, accessToken, sessionResponse.SessionState);
+                await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, idToken, accessToken, sessionResponse.SessionState);
                 navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
             }
             catch (Exception ex)
@@ -121,7 +116,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        private async Task<(int, ClaimsPrincipal, string)> AcquireTokensAsync(OpenidConnectPkceState openidClientPkceState, string code)
+        private async Task<(int, ClaimsPrincipal, string, string)> AcquireTokensAsync(OpenidConnectPkceState openidClientPkceState, string code)
         {
             var tokenRequest = new TokenRequest
             {
@@ -160,7 +155,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         throw new SecurityException("Nonce do not match.");
                     }
 
-                    return (tokenResponse.ExpiresIn, idTokenPrincipal, tokenResponse.AccessToken);
+                    return (tokenResponse.ExpiresIn, idTokenPrincipal, tokenResponse.IdToken, tokenResponse.AccessToken);
 
                 case HttpStatusCode.BadRequest:
                     var resultBadRequest = await response.Content.ReadAsStringAsync();
@@ -171,6 +166,67 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 default:
                     throw new Exception($"Error login call back, Status Code not expected. StatusCode={response.StatusCode}");
             }
+        }
+
+        public async Task LogoutAsync(OpenidConnectPkceSettings openidClientPkceSettings = null)
+        {
+            try
+            {
+                openidClientPkceSettings = openidClientPkceSettings ?? globalOpenidClientPkceSettings;
+
+                var logoutCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LogoutCallBackPath).OriginalString;
+                var state = await SaveStateAsync(openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId, logoutCallBackUri, navigationManager.Uri);
+
+                var endSessionRequest = new EndSessionRequest
+                {
+                    IdTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(),
+                    PostLogoutRedirectUri = logoutCallBackUri,
+                    State = state
+                };
+
+                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
+
+                var nameValueCollection = endSessionRequest.ToDictionary();
+                var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
+                var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
+                navigationManager.NavigateTo(endSessionEndpointUri);
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityException($"Failed to end session, Authority '{openidClientPkceSettings.Authority}'.", ex);
+            }
+        }
+
+        public async Task LogoutCallBackAsync(string responseUrl)
+        {
+            try
+            {
+                var endSessionResponse = GetResponseQuery(responseUrl).ToObject<EndSessionResponse>();
+                endSessionResponse.Validate();
+                if (endSessionResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(endSessionResponse.State), endSessionResponse.GetTypeName());
+
+                var openidClientPkceState = await GetState(endSessionResponse.State);
+                if (openidClientPkceState == null)
+                {
+                    throw new SecurityException($"State '{endSessionResponse.State}' do not exist.");
+                }
+
+                navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityException($"Failed to handle login call back, response url '{responseUrl}'.", ex);
+            }
+        }
+
+        private Dictionary<string, string> GetResponseQuery(string responseUrl)
+        {
+            var responseSplit = responseUrl.Split(responseUrl.Contains('#') ? '#' : '?');
+            if (responseUrl.Count() <= 1)
+            {
+                throw new SecurityException("Invalid response url.");
+            }
+            return QueryHelpers.ParseQuery(responseSplit[1]).ToDictionary();
         }
 
         private async Task<OidcDiscovery> GetOidcDiscoveryAsync(string oidcDiscoveryUri)
@@ -196,7 +252,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 throw new Exception($"Failed to fetch Oidc Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
             }
         }
-
 
         private async Task<string> SaveStateAsync(string oidcDiscoveryUri, string clientId, string callBackUri, string redirectUri, string codeVerifier = null, string nonce = null)
         {

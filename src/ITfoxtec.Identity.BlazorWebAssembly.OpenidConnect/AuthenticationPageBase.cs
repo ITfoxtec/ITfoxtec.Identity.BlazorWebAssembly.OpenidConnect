@@ -21,9 +21,9 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             {
                 await openidConnectPkce.LoginCallBackAsync(navigationManager.Uri);
             }
-            else if ("login_callback".Equals(Action, StringComparison.OrdinalIgnoreCase))
+            else if ("logout_callback".Equals(Action, StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotImplementedException();
+                await openidConnectPkce.LogoutCallBackAsync(navigationManager.Uri);
             }
             else
             {
