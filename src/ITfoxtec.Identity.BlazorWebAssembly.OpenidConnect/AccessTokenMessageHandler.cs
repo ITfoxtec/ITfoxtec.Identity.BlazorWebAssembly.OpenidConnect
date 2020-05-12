@@ -25,21 +25,26 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
         public string[] AuthorizedUris { get; set; }
 
-        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (GetBaseUriOrAuthorizedUris().Any(u => u.IsBaseOf(request.RequestUri)))
             {
                 var accessToken = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetAccessToken();
                 if (accessToken.IsNullOrEmpty())
                 {
-                    await openidConnectPkce.LoginAsync();
+                    await LoginAsync();
                 }
                 request.Headers.Authorization = new AuthenticationHeaderValue(IdentityConstants.TokenTypes.Bearer, accessToken);
             }
             return await base.SendAsync(request, cancellationToken);
         }
 
-        private IEnumerable<Uri> GetBaseUriOrAuthorizedUris()
+        protected virtual async Task LoginAsync()
+        {
+            await openidConnectPkce.LoginAsync();
+        }
+
+        protected virtual IEnumerable<Uri> GetBaseUriOrAuthorizedUris()
         {
             if(AuthorizedUris?.Count() > 0)
             {
