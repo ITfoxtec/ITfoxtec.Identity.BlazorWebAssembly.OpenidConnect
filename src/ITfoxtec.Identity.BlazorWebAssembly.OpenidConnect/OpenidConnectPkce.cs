@@ -6,6 +6,7 @@ using ITfoxtec.Identity.Util;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -20,20 +21,18 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
     public class OpenidConnectPkce
     {
+        protected readonly IServiceProvider serviceProvider;
         protected readonly OpenidConnectPkceSettings globalOpenidClientPkceSettings;
-        protected readonly HttpClient httpClient;
         protected readonly NavigationManager navigationManager;
         protected readonly ISessionStorageService sessionStorage;
-        protected readonly OidcDiscoveryHandler oidcDiscoveryHandler;
-        private readonly AuthenticationStateProvider authenticationStateProvider;
+        protected readonly AuthenticationStateProvider authenticationStateProvider;
 
-        public OpenidConnectPkce(OpenidConnectPkceSettings globalOpenidClientPkceSettings, HttpClient httpClient, NavigationManager navigationManager, ISessionStorageService sessionStorage, OidcDiscoveryHandler oidcDiscoveryHandler, AuthenticationStateProvider authenticationStateProvider)
+        public OpenidConnectPkce(IServiceProvider serviceProvider, OpenidConnectPkceSettings globalOpenidClientPkceSettings, NavigationManager navigationManager, ISessionStorageService sessionStorage, AuthenticationStateProvider authenticationStateProvider)
         {
+            this.serviceProvider = serviceProvider;
             this.globalOpenidClientPkceSettings = globalOpenidClientPkceSettings;
-            this.httpClient = httpClient;
             this.navigationManager = navigationManager;
             this.sessionStorage = sessionStorage;
-            this.oidcDiscoveryHandler = oidcDiscoveryHandler;
             this.authenticationStateProvider = authenticationStateProvider;
         }
 
@@ -136,6 +135,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(tokenRequest.ToDictionary().AddToDictionary(codeVerifierSecret));
 
+            var httpClient = serviceProvider.GetService<HttpClient>();
             var response = await httpClient.SendAsync(request);
             switch (response.StatusCode)
             {
@@ -184,8 +184,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     State = state
                 };
 
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
-
                 var nameValueCollection = endSessionRequest.ToDictionary();
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
@@ -211,6 +209,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     throw new SecurityException($"State '{endSessionResponse.State}' do not exist.");
                 }
 
+                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
                 navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
             }
             catch (Exception ex)
@@ -233,10 +232,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             try
             {
+                var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
                 return await oidcDiscoveryHandler.GetOidcDiscoveryAsync(oidcDiscoveryUri);
             }
             catch (Exception ex)
-            { 
+            {
                 throw new Exception($"Failed to fetch Oidc Discovery from '{oidcDiscoveryUri}'.", ex);
             }
         }
@@ -245,6 +245,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             try
             {
+                var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
                 return await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
             }
             catch (Exception ex)

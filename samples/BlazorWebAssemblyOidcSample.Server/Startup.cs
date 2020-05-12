@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ITfoxtec.Identity;
+using System.Threading.Tasks;
 
 namespace BlazorWebAssemblyOidcSample.Server
 {
@@ -22,9 +23,29 @@ namespace BlazorWebAssemblyOidcSample.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = Configuration["IdentitySettings:Authority"];
+                    options.Audience = Configuration["IdentitySettings:ResourceId"];
+
+                    options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Subject;
+                    options.TokenValidationParameters.RoleClaimType = JwtClaimTypes.Role;
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = async (context) =>
+                        {
+                            await Task.FromResult(string.Empty);
+                        }
+                    };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,10 +64,14 @@ namespace BlazorWebAssemblyOidcSample.Server
             }
 
             app.UseHttpsRedirection();
+
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

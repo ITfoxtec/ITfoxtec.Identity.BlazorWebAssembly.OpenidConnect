@@ -10,6 +10,8 @@ namespace BlazorWebAssemblyOidcSample.Client
 {
     public class Program
     {
+        const string httpClientLogicalName = "BlazorWebAssemblyOidcSample.API";
+
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -21,7 +23,16 @@ namespace BlazorWebAssemblyOidcSample.Client
 
         private static void ConfigureServices(IServiceCollection services, WebAssemblyHostConfiguration configuration, IWebAssemblyHostEnvironment hostEnvironment)
         {
-            services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(hostEnvironment.BaseAddress) });
+            services.AddHttpClient(httpClientLogicalName, client => client.BaseAddress = new Uri(hostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<AccessTokenMessageHandler>();
+                //.AddHttpMessageHandler(sp =>
+                //{
+                //    var handler = sp.GetService<AccessTokenMessageHandler>();
+                //    configuration.Bind("IdentitySettings", handler);
+                //    return handler;
+                //});
+
+            services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(httpClientLogicalName));
 
             services.AddOpenidConnectPkce(settings =>
             {
