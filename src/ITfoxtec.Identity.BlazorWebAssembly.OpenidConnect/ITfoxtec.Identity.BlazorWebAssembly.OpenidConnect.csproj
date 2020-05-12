@@ -16,7 +16,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Copyright>© 2020 ITfoxtec</Copyright>
 		<AssemblyVersion>1.0.2.0</AssemblyVersion>
-		<FileVersion>1.0.1.0</FileVersion>
+		<FileVersion>1.0.2.0</FileVersion>
 		<Version>1.0.2</Version>
 	</PropertyGroup>
 
