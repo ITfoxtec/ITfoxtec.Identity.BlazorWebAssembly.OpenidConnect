@@ -12,9 +12,9 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
     public class AccessTokenMessageHandler : DelegatingHandler
     {
-        private readonly NavigationManager navigationManager;
-        private readonly OpenidConnectPkce openidConnectPkce;
-        private readonly AuthenticationStateProvider authenticationStateProvider;
+        protected readonly NavigationManager navigationManager;
+        protected readonly OpenidConnectPkce openidConnectPkce;
+        protected readonly AuthenticationStateProvider authenticationStateProvider;
 
         public AccessTokenMessageHandler(NavigationManager navigationManager, OpenidConnectPkce openidConnectPkce, AuthenticationStateProvider authenticationStateProvider)
         {
