@@ -21,12 +21,15 @@ dotnet add package ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 ```
 
 ### Setup and configuration
-Register the OpenidConnectPkce and the HttpClient in the _Program.cs_ file. The library requires the HttpClient.
+Register the OpenidConnectPkce, the HttpClient and the IHttpClientFactory in the _Program.cs_ file.
 
 ```c#
 private static void ConfigureServices(IServiceCollection services, WebAssemblyHostConfiguration configuration, IWebAssemblyHostEnvironment hostEnvironment)
 {
-    services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(hostEnvironment.BaseAddress) });
+    services.AddHttpClient("BlazorWebAssemblyOidcSample.API", client => client.BaseAddress = new Uri(hostEnvironment.BaseAddress))
+        .AddHttpMessageHandler<AccessTokenMessageHandler>();
+
+    services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BlazorWebAssemblyOidcSample.API"));
 
     services.AddOpenidConnectPkce(settings =>
     {
@@ -48,6 +51,43 @@ Add _appsettings.json_ and possible _appsettings.Development.json_ configuration
 ```
 
 Add the library namespace `@using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect` to __Imports.razor_.
+
+### API calls to another domain
+The configuration can be expanded to support API calls to another domains then the base domain. The trusted _AuthorizedUris_ in the _IdentitySettings_ configuration is configured on the AccessTokenMessageHandler. 
+
+```c#
+private static void ConfigureServices(IServiceCollection services, WebAssemblyHostConfiguration configuration, IWebAssemblyHostEnvironment hostEnvironment)
+{
+    services.AddHttpClient("BlazorWebAssemblyOidcSample.API", client => client.BaseAddress = new Uri(hostEnvironment.BaseAddress))
+        .AddHttpMessageHandler(sp =>
+        {
+            var handler = sp.GetService<AccessTokenMessageHandler>();
+            configuration.Bind("IdentitySettings", handler);
+            return handler;
+        });
+
+    services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BlazorWebAssemblyOidcSample.API"));
+
+    services.AddOpenidConnectPkce(settings =>
+    {
+        configuration.Bind("IdentitySettings", settings);
+    });
+}
+```
+
+Add trusted domains as _AuthorizedUris_ in the _IdentitySettings_ configuration. 
+
+```json
+{
+  "IdentitySettings": {
+    "Authority": "https://...some authority.../",
+    "ClientId": "...client id...",
+    "Scope": "...some scope...",
+    "AuthorizedUris": [ "...authorized api uri..." ]
+  }
+}
+```
+
 
 ### Add call back page
 Add a _Authentication.razor_ call back page in the _Pages_ folder with the following content.
@@ -135,6 +175,8 @@ The _LoginDisplay_ can be added to the _MainLayout.razor_ like this.
 </div>
 
 ```
+
+
 
 ### Support
 If you have questions please ask them on <a href="https://stackoverflow.com">Stack Overflow</a>. Then email a link to support@itfoxtec.com and I will answer as soon as possible.
