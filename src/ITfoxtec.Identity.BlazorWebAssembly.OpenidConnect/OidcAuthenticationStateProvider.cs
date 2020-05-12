@@ -88,6 +88,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public async Task DeleteSessionAsync()
         {
             await sessionStorage.RemoveItemAsync(userSessionKey);
+
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
     }
 }
