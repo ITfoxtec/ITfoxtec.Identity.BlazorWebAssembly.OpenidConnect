@@ -105,7 +105,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var sessionResponse = responseQuery.ToObject<SessionResponse>();
                 sessionResponse.Validate();
 
-                var validUntil = DateTimeOffset.UtcNow.AddSeconds(expiresIn).AddMinutes(globalOpenidClientPkceSettings.TokensExpiresBefore);
+                var validUntil = DateTimeOffset.UtcNow.AddSeconds(expiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                 await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, idToken, accessToken, sessionResponse.SessionState);
                 navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
             }
