@@ -1,6 +1,7 @@
 @page "/fetchdata"
 @using BlazorWebAssemblyOidcSample.Shared
 @inject HttpClient Http
+@inject OpenidConnectPkce OpenidConnectPkce
 @attribute [Authorize]
 
 <h1>Weather forecast</h1>
@@ -41,7 +42,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        try
+        {
+            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        }
+        catch (AuthenticationException)
+        {
+            await OpenidConnectPkce.LoginAsync();
+        }
     }
-
 }
