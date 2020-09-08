@@ -214,7 +214,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             catch (Exception ex)
             {
-                throw new SecurityException($"Failed to handle login call back, response url '{responseUrl}'.", ex);
+                throw new SecurityException($"Failed to handle logout call back, response url '{responseUrl}'.", ex);
             }
         }
 
