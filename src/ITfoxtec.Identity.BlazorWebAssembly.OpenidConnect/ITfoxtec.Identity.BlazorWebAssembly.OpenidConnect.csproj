@@ -15,14 +15,14 @@
 		<PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE)</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Copyright>© 2020 ITfoxtec</Copyright>
-		<AssemblyVersion>1.0.6.0</AssemblyVersion>
-		<FileVersion>1.0.6.0</FileVersion>
-		<Version>1.0.6</Version>
+		<AssemblyVersion>1.0.7.0</AssemblyVersion>
+		<FileVersion>1.0.7.0</FileVersion>
+		<Version>1.0.7</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
-		<PackageReference Include="ITfoxtec.Identity" Version="1.1.8" />
+		<PackageReference Include="ITfoxtec.Identity" Version="1.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.7" />
 	</ItemGroup>
