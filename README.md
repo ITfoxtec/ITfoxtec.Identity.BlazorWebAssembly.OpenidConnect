@@ -52,6 +52,16 @@ Add _appsettings.json_ and possible _appsettings.Development.json_ configuration
 
 Add the library namespace `@using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect` to __Imports.razor_.
 
+### IdP configuration
+Configuration the Blazor client as a OpenID Connect client on the IdP.
+
+```
+Response types: code
+Enable PKCE: true
+Login call back: ...base url.../authentication/login_callback
+Logout call back: ...base url.../authentication/logout_callback
+```
+
 ### API calls to another domain
 The configuration can be expanded to support API calls to another domains then the base domain. The trusted _AuthorizedUris_ in the _IdentitySettings_ configuration is configured on the AccessTokenMessageHandler. 
 
