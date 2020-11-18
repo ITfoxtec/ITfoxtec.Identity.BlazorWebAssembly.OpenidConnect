@@ -1,5 +1,7 @@
 ﻿using Blazored.SessionStorage;
+using ITfoxtec.Identity.Messages;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +13,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
     public class OidcAuthenticationStateProvider : AuthenticationStateProvider
     {
         private const string userSessionKey = "user_session";
+        private readonly IServiceProvider serviceProvider;
         private readonly OpenidConnectPkceSettings openidClientPkceSettings;
         private readonly ISessionStorageService sessionStorage;
 
-        public OidcAuthenticationStateProvider(OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage)
+        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage)
         {
+            this.serviceProvider = serviceProvider;
             this.openidClientPkceSettings = openidClientPkceSettings;
             this.sessionStorage = sessionStorage;
         }
@@ -55,6 +59,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
             if (userSession != null)
             {
+                userSession = await serviceProvider.GetService<OpenidConnectPkce>().HandleRefreshTokenAsync(userSession);
+
                 if (userSession.ValidUntil >= DateTimeOffset.UtcNow)
                 {
                     return userSession;
@@ -68,7 +74,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             return null;
         }
 
-        public async Task CreateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, string idToken, string accessToken, string sessionState)
+        public Task<OidcUserSession> CreateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, OpenidConnectPkceState openidClientPkceState)
+        {
+            return CreateUpdateSessionAsync(validUntil, claimsPrincipal, tokenResponse, sessionState, openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId);
+        }
+
+        public Task<OidcUserSession> UpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, OidcUserSession userSession)
+        {
+            return CreateUpdateSessionAsync(validUntil, claimsPrincipal, tokenResponse, sessionState, userSession.OidcDiscoveryUri, userSession.ClientId);
+        }
+
+        private async Task<OidcUserSession> CreateUpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, string oidcDiscoveryUri, string clientId)
         {
             var claimsIdentity = claimsPrincipal.Identities.First();
             var userSession = new OidcUserSession
@@ -76,13 +92,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 ValidUntil = validUntil,
                 Claims = claimsIdentity.Claims.Select(c => new KeyValuePair<string, string>(c.Type, c.Value)),
                 AuthenticationType = claimsIdentity.AuthenticationType,
-                IdToken = idToken,
-                AccessToken = accessToken,
-                SessionState = sessionState
+                IdToken = tokenResponse.IdToken,
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                SessionState = sessionState,
+                OidcDiscoveryUri = oidcDiscoveryUri,
+                ClientId = clientId
             };
             await sessionStorage.SetItemAsync(userSessionKey, userSession);
 
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            return userSession;
         }
 
         public async Task DeleteSessionAsync()

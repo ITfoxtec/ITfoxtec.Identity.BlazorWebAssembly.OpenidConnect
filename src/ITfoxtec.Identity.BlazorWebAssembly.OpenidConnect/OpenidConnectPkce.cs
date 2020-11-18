@@ -100,13 +100,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     throw new SecurityException($"State '{authenticationResponse.State}' do not exist.");
                 }
 
-                (var expiresIn, var idTokenPrincipal, var idToken, var accessToken) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
+                (var idTokenPrincipal, var tokenResponse) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
 
                 var sessionResponse = responseQuery.ToObject<SessionResponse>();
                 sessionResponse.Validate();
 
-                var validUntil = DateTimeOffset.UtcNow.AddSeconds(expiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, idToken, accessToken, sessionResponse.SessionState);
+                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
                 navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
             }
             catch (Exception ex)
@@ -115,7 +115,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        private async Task<(int, ClaimsPrincipal, string, string)> AcquireTokensAsync(OpenidConnectPkceState openidClientPkceState, string code)
+        private async Task<(ClaimsPrincipal idTokenPrincipal, TokenResponse tokenResponse)> AcquireTokensAsync(OpenidConnectPkceState openidClientPkceState, string code)
         {
             var tokenRequest = new TokenRequest
             {
@@ -155,7 +155,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         throw new SecurityException("Nonce do not match.");
                     }
 
-                    return (tokenResponse.ExpiresIn, idTokenPrincipal, tokenResponse.IdToken, tokenResponse.AccessToken);
+                    return (idTokenPrincipal, tokenResponse);
 
                 case HttpStatusCode.BadRequest:
                     var resultBadRequest = await response.Content.ReadAsStringAsync();
@@ -165,6 +165,66 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
                 default:
                     throw new Exception($"Error login call back, Status Code not expected. StatusCode={response.StatusCode}");
+            }
+        }
+
+        public async Task<OidcUserSession> HandleRefreshTokenAsync(OidcUserSession userSession)
+        {
+            if (!userSession.RefreshToken.IsNullOrEmpty() && userSession.ValidUntil < DateTimeOffset.UtcNow.AddSeconds(globalOpenidClientPkceSettings.TokensExpiresBefore))
+            {
+                var subject = userSession.Claims.Where(c => c.Key == JwtClaimTypes.Subject).Select(c => c.Value).SingleOrDefault();
+                (var idTokenPrincipal, var tokenResponse) = await AcquireRefreshTokensAsync(userSession.OidcDiscoveryUri, userSession.ClientId, subject, userSession.RefreshToken);
+
+                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                return await (authenticationStateProvider as OidcAuthenticationStateProvider).UpdateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, userSession.SessionState, userSession);
+            }
+
+            return userSession;
+        }
+
+        private async Task<(ClaimsPrincipal idTokenPrincipal, TokenResponse tokenResponse)> AcquireRefreshTokensAsync(string oidcDiscoveryUri, string clientId, string subject, string refreshToken)
+        {
+            var tokenRequest = new TokenRequest
+            {
+                GrantType = IdentityConstants.GrantTypes.RefreshToken,
+                RefreshToken = refreshToken,
+                ClientId = clientId,
+            };
+
+            var oidcDiscovery = await GetOidcDiscoveryAsync(oidcDiscoveryUri);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
+            request.Content = new FormUrlEncodedContent(tokenRequest.ToDictionary());
+
+            var httpClient = serviceProvider.GetService<HttpClient>();
+            var response = await httpClient.SendAsync(request);
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    var result = await response.Content.ReadAsStringAsync();
+                    var tokenResponse = result.ToObject<TokenResponse>();
+                    tokenResponse.Validate(true);
+                    if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
+                    if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
+
+                    var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId);
+
+                    if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
+                    {
+                        throw new Exception("New principal has invalid sub claim.");
+                    }
+
+                    return (idTokenPrincipal, tokenResponse);
+
+                case HttpStatusCode.BadRequest:
+                    var resultBadRequest = await response.Content.ReadAsStringAsync();
+                    var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
+                    tokenResponseBadRequest.Validate(true);
+                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
+
+                default:
+                    throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
             }
         }
 
@@ -215,7 +275,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             catch (Exception ex)
             {
-                throw new SecurityException($"Failed to handle logout call back, response url '{responseUrl}'.", ex);
+                throw new SecurityException($"Failed to handle logout call back, response URL '{responseUrl}'.", ex);
             }
         }
 
@@ -224,7 +284,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var responseSplit = responseUrl.Split(responseUrl.Contains('#') ? '#' : '?');
             if (responseUrl.Count() <= 1)
             {
-                throw new SecurityException("Invalid response url.");
+                throw new SecurityException("Invalid response URL.");
             }
             return QueryHelpers.ParseQuery(responseSplit[1]).ToDictionary();
         }
@@ -238,7 +298,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to fetch Oidc Discovery from '{oidcDiscoveryUri}'.", ex);
+                throw new Exception($"Failed to fetch OIDC Discovery from '{oidcDiscoveryUri}'.", ex);
             }
         }
 
@@ -251,7 +311,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to fetch Oidc Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
+                throw new Exception($"Failed to fetch OIDC Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
             }
         }
 
@@ -280,7 +340,5 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
             return openidClientPkceState;
         }
-
-
     }
 }

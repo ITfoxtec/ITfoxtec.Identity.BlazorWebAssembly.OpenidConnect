@@ -66,8 +66,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public string RoleClaimType { get; set; } = JwtClaimTypes.Role;
 
         /// <summary>
-        /// Tokens expires before actual expiration time, in seconds. Default 5 minutes.
+        /// Tokens expires before actual expiration time, in seconds. Default 30 seconds.
         /// </summary>
-        public int TokensExpiresBefore { get; set; } = 300;
+        public int TokensExpiresBefore { get; set; } = 30;
     }
 }
