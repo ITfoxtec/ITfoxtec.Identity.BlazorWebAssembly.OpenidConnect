@@ -187,6 +187,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var nameValueCollection = endSessionRequest.ToDictionary();
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
+                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
                 navigationManager.NavigateTo(endSessionEndpointUri);
             }
             catch (Exception ex)
