@@ -7,12 +7,12 @@
 		
 		<Authors>Anders Revsgaard</Authors>
 		<Company>ITfoxtec</Company>
-		<Description>A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.</Description>
+		<Description>A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly. Support refresh token with the offline_access scope.</Description>
 		<PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
 		<PackageIconUrl>https://itfoxtec.com/favicon.ico</PackageIconUrl>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
-		<PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE)</PackageTags>
+		<PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token id_token access token access_token refresh token refresh_token</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Copyright>© 2020 ITfoxtec</Copyright>
 		<AssemblyVersion>1.1.0.0</AssemblyVersion>
