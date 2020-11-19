@@ -76,7 +76,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
         public Task<OidcUserSession> CreateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, OpenidConnectPkceState openidClientPkceState)
         {
-            return CreateUpdateSessionAsync(validUntil, claimsPrincipal, tokenResponse, sessionState, openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId);
+            return CreateUpdateSessionAsync(validUntil, claimsPrincipal, tokenResponse, sessionState, openidClientPkceState.OidcDiscoveryUri, openidClientPkceState.ClientId);
         }
 
         public Task<OidcUserSession> UpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, OidcUserSession userSession)

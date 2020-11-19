@@ -11,7 +11,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public string Authority { get; set; }
 
         /// <summary>
-        /// The OIDC Discovery uri.
+        /// The OIDC Discovery URI.
         /// </summary>
         public string OidcDiscoveryUri => new Uri(new Uri(Authority), IdentityConstants.OidcDiscovery.Path).OriginalString;
 
