@@ -56,6 +56,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         }
 
         /// <summary>
+        /// Gets or sets the list of resources to request.
+        /// </summary>
+        public IEnumerable<string> Resources { get; set; }
+
+        /// <summary>
         /// Gets or sets a string that defines the name claim type. Default sub.
         /// </summary>
         public string NameClaimType { get; set; } = JwtClaimTypes.Subject;

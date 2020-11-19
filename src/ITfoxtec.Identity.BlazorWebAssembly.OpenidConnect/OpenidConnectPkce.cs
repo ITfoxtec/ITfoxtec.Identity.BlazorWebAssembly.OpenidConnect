@@ -66,6 +66,16 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 };
 
                 var nameValueCollection = authenticationRequest.ToDictionary().AddToDictionary(codeChallengeRequest);
+
+                if(openidClientPkceSettings.Resources?.Count() > 0)
+                {
+                    var resourceRequest = new ResourceRequest
+                    {
+                        Resources = openidClientPkceSettings.Resources
+                    };
+                    nameValueCollection = nameValueCollection.AddToDictionary(resourceRequest);
+                }
+
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var authorizationUri = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, nameValueCollection);
                 navigationManager.NavigateTo(authorizationUri);
