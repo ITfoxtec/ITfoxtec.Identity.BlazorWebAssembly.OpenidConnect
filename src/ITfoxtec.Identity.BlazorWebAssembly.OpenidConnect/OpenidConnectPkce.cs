@@ -78,7 +78,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var authorizationUri = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, nameValueCollection);
-                navigationManager.NavigateTo(authorizationUri);
+                navigationManager.NavigateTo(authorizationUri, true);
 
             }
             catch (Exception ex)
@@ -117,11 +117,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
                 var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                 await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
-                navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
+                navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
             }
             catch (Exception ex)
             {
-                throw new SecurityException($"Failed to handle login call back, response url '{responseUrl}'.", ex);
+                throw new SecurityException($"Failed to handle login call back, response URL '{responseUrl}'.", ex);
             }
         }
 
@@ -258,7 +258,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
                 await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
-                navigationManager.NavigateTo(endSessionEndpointUri);
+                navigationManager.NavigateTo(endSessionEndpointUri, true);
             }
             catch (Exception ex)
             {
@@ -281,7 +281,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 }
 
                 await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
-                navigationManager.NavigateTo(openidClientPkceState.RedirectUri);
+                navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
             }
             catch (Exception ex)
             {
