@@ -43,18 +43,18 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        public async Task<string> GetIdToken()
+        public async Task<string> GetIdToken(bool readInvalidSession = false)
         {
-            var userSession = await GetUserSessionAsync();
+            var userSession = await GetUserSessionAsync(readInvalidSession);
             return userSession?.IdToken;
         }
-        public async Task<string> GetAccessToken()
+        public async Task<string> GetAccessToken(bool readInvalidSession = false)
         {
-            var userSession = await GetUserSessionAsync();
+            var userSession = await GetUserSessionAsync(readInvalidSession);
             return userSession?.AccessToken;
         }
 
-        protected async Task<OidcUserSession> GetUserSessionAsync()
+        protected async Task<OidcUserSession> GetUserSessionAsync(bool readInvalidSession = false)
         {
             var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
             if (userSession != null)
@@ -68,6 +68,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 else
                 {
                     await DeleteSessionAsync();
+
+                    if (readInvalidSession)
+                    {
+                        return userSession;
+                    }
                 }
             }
 

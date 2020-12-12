@@ -266,9 +266,14 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var logoutCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LogoutCallBackPath).OriginalString;
                 var state = await SaveStateAsync(openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId, logoutCallBackUri, navigationManager.Uri);
 
+                var idTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(readInvalidSession: true);
+                if(idTokenHint.IsNullOrEmpty())
+                {
+                    navigationManager.NavigateTo(logoutCallBackUri, true);
+                }
                 var endSessionRequest = new EndSessionRequest
                 {
-                    IdTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(),
+                    IdTokenHint = idTokenHint,
                     PostLogoutRedirectUri = logoutCallBackUri,
                     State = state
                 };
