@@ -33,7 +33,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var accessToken = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetAccessToken();
                 if (accessToken.IsNullOrEmpty())
                 {
-                    throw new AuthenticationException("Access token is not available.");
+                    throw new AuthenticationException("Access token is not available.");                    
                 }
                 request.Headers.Authorization = new AuthenticationHeaderValue(IdentityConstants.TokenTypes.Bearer, accessToken);
             }

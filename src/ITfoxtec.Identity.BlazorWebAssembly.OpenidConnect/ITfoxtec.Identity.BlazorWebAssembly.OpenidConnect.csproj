@@ -1,40 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-	<PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
-		<RazorLangVersion>3.0</RazorLangVersion>
-		<RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
-		
-		<Authors>Anders Revsgaard</Authors>
-		<Company>ITfoxtec</Company>
-		<Description>A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
-The received ID token is validated by the component in the client using the OpenID Provider (OP) discovery document.
-The component automatically handle token / session update with use of the refresh token if the offline_access scope is specified.
-    </Description>
-		<PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
-		<PackageIconUrl>https://itfoxtec.com/favicon.ico</PackageIconUrl>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
-		<PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Copyright>© 2020 ITfoxtec</Copyright>
-		<AssemblyVersion>1.2.0.0</AssemblyVersion>
-		<FileVersion>1.2.0.0</FileVersion>
-		<Version>1.2.0</Version>
-	</PropertyGroup>
+    
+    <RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
-    <PackageReference Include="ITfoxtec.Identity" Version="2.0.2" />   
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.0" />
+    <Authors>Anders Revsgaard</Authors>
+    <Company>ITfoxtec</Company>
+    <Description>
+      A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
+      The received ID token is validated by the component in the client using the OpenID Provider (OP) discovery document.
+      The component automatically handle token / session update with use of the refresh token if the offline_access scope is specified.
+    </Description>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageIconUrl>https://itfoxtec.com/favicon.ico</PackageIconUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
+    <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>© 2020 ITfoxtec</Copyright>
+    <AssemblyVersion>1.2.11.0</AssemblyVersion>
+    <FileVersion>1.2.11.0</FileVersion>
+    <Version>1.2.11</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ITfoxtec.Identity" Version="2.0.25" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
-    <PackageReference Include="ITfoxtec.Identity" Version="1.3.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.1" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
+    <DefineConstants>NET50;NET</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5.0|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.7" />
   </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>NETSTANDARD2;NETSTANDARD</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
   
 </Project>

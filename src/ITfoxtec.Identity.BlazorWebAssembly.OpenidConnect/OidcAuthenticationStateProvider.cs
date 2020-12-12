@@ -87,10 +87,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         private async Task<OidcUserSession> CreateUpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, string oidcDiscoveryUri, string clientId)
         {
             var claimsIdentity = claimsPrincipal.Identities.First();
+
+            var sessionClaims = new Dictionary<string, string>();
+            foreach(var claim in claimsIdentity.Claims)
+            {
+                sessionClaims.Add(claim.Type, claim.Value);
+            }
+
             var userSession = new OidcUserSession
             {
                 ValidUntil = validUntil,
-                Claims = claimsIdentity.Claims.Select(c => new KeyValuePair<string, string>(c.Type, c.Value)),
+                Claims = sessionClaims,
                 AuthenticationType = claimsIdentity.AuthenticationType,
                 IdToken = tokenResponse.IdToken,
                 AccessToken = tokenResponse.AccessToken,

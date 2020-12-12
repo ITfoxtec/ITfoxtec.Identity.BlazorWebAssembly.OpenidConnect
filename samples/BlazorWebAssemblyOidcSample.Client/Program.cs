@@ -15,7 +15,7 @@ namespace BlazorWebAssemblyOidcSample.Client
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<App>("app");
+            builder.RootComponents.Add<App>("#app");
             ConfigureServices(builder.Services, builder.Configuration, builder.HostEnvironment);
 
             await builder.Build().RunAsync();
@@ -32,7 +32,7 @@ namespace BlazorWebAssemblyOidcSample.Client
                 //    return handler;
                 //});
 
-            services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(httpClientLogicalName));
+            services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(httpClientLogicalName));
 
             services.AddOpenidConnectPkce(settings =>
             {

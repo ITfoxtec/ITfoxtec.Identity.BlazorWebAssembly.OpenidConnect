@@ -1,5 +1,6 @@
 ﻿using Blazored.SessionStorage;
 using ITfoxtec.Identity.Discovery;
+using ITfoxtec.Identity.Models;
 using ITfoxtec.Identity.Messages;
 using ITfoxtec.Identity.Tokens;
 using ITfoxtec.Identity.Util;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,7 +157,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
                     var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
-                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, openidClientPkceState.ClientId, nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
+
+                    // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
+                    // https://github.com/dotnet/aspnetcore/issues/26123
+                    // https://github.com/dotnet/runtime/issues/40074
+
+                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
+                        nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType
+#if NET50
+                        , validateSigningKey: false
+#endif
+                        );
 
                     var nonce = idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Nonce).Select(c => c.Value).SingleOrDefault();
                     if (!openidClientPkceState.Nonce.Equals(nonce, StringComparison.Ordinal))
@@ -218,7 +228,16 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
                     var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
-                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId);
+
+                    // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
+                    // https://github.com/dotnet/aspnetcore/issues/26123
+                    // https://github.com/dotnet/runtime/issues/40074
+
+                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId
+#if NET50
+                        , validateSigningKey: false
+#endif
+                        );
 
                     if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
                     {
@@ -257,7 +276,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var nameValueCollection = endSessionRequest.ToDictionary();
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
                 navigationManager.NavigateTo(endSessionEndpointUri, true);
             }
             catch (Exception ex)
