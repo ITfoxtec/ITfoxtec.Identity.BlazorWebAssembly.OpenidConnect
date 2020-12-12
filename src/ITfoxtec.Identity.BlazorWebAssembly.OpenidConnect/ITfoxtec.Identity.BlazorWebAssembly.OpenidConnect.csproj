@@ -19,9 +19,9 @@
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>© 2020 ITfoxtec</Copyright>
-    <AssemblyVersion>1.2.11.0</AssemblyVersion>
-    <FileVersion>1.2.11.0</FileVersion>
-    <Version>1.2.11</Version>
+    <AssemblyVersion>1.2.12.0</AssemblyVersion>
+    <FileVersion>1.2.12.0</FileVersion>
+    <Version>1.2.12</Version>
   </PropertyGroup>
 
   <ItemGroup>
