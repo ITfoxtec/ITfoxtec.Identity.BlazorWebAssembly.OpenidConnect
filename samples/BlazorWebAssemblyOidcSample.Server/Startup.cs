@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ITfoxtec.Identity;
 using System.Threading.Tasks;
+using BlazorWebAssemblyOidcSample.Server.Policys;
 
 namespace BlazorWebAssemblyOidcSample.Server
 {
@@ -46,6 +47,11 @@ namespace BlazorWebAssemblyOidcSample.Server
                         }
                     };
                 });
+
+            services.AddAuthorization(options =>
+            {
+                AccessPolicyAttribute.AddPolicy(options);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

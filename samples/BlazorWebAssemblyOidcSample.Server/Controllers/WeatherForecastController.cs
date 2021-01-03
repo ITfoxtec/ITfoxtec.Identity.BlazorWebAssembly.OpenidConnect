@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
+using BlazorWebAssemblyOidcSample.Server.Policys;
 
 namespace BlazorWebAssemblyOidcSample.Server.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AccessPolicy]
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
