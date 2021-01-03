@@ -65,8 +65,8 @@ Configuration the Blazor client as a OpenID Connect client on the IdP.
 ```
 Response types: code
 Enable PKCE: true
-Login call back: ...base url.../authentication/login_callback
-Logout call back: ...base url.../authentication/logout_callback
+Login call back: ...base URL.../authentication/login_callback
+Logout call back: ...base URL.../authentication/logout_callback
 ```
 
 ### API calls to another domain
@@ -100,7 +100,8 @@ Add trusted domains as _AuthorizedUris_ in the _IdentitySettings_ configuration.
     "Authority": "https://...some authority.../",
     "ClientId": "...client id...",
     "Scope": "...some scope...",
-    "AuthorizedUris": [ "...authorized api uri..." ]
+    "Resources": [ "...resource..." ],
+    "AuthorizedUris": [ "...authorized api Uri..." ]
   }
 }
 ```
