@@ -10,7 +10,7 @@ The component automatically handle token / session update with use of refresh to
 
 > Please see the [sample application](https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect/tree/master/samples) for implementation details.  
 > The sample application is configured to authenticate with [foxids.com](https://foxids.com) using test user 'test1@foxids.com' or 'test2@foxids.com' and password 'TestAccess!'.  
-> For more information about FoxIDs please see the [FoxIDs documentation](https://www.itfoxtec.com/FoxIDs).
+> For more information about the open source FoxIDs please see the [FoxIDs documentation](https://www.itfoxtec.com/FoxIDs).
 
 ## Install
 Install the ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect NuGet package via the Visual Studio package manger. 
