@@ -59,19 +59,34 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
             if (userSession != null)
             {
-                userSession = await serviceProvider.GetService<OpenidConnectPkce>().HandleRefreshTokenAsync(userSession);
-
-                if (userSession.ValidUntil >= DateTimeOffset.UtcNow)
+                try
                 {
-                    return userSession;
-                }
-                else
-                {
-                    await DeleteSessionAsync();
+                    userSession = await serviceProvider.GetService<OpenidConnectPkce>().HandleRefreshTokenAsync(userSession);
 
-                    if (readInvalidSession)
+                    if (userSession.ValidUntil >= DateTimeOffset.UtcNow)
                     {
                         return userSession;
+                    }
+                    else
+                    {
+                        await DeleteSessionAsync();
+
+                        if (readInvalidSession)
+                        {
+                            return userSession;
+                        }
+                    }
+                }
+                catch (TokenUnavailableException)
+                {
+                    await DeleteSessionAsync();
+                    if (readInvalidSession)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        throw;
                     }
                 }
             }

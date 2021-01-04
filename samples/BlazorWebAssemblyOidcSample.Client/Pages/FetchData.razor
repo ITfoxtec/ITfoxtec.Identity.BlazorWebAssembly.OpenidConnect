@@ -46,7 +46,7 @@ else
         {
             forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
         }
-        catch (AuthenticationException)
+        catch (TokenUnavailableException)
         {
             await OpenidConnectPkce.LoginAsync();
         }

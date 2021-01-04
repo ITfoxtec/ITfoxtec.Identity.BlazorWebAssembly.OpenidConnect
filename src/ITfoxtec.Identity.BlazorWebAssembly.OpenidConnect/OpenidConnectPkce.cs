@@ -250,7 +250,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     var resultBadRequest = await response.Content.ReadAsStringAsync();
                     var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
                     tokenResponseBadRequest.Validate(true);
-                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
+                    throw new TokenUnavailableException($"Error, Bad request. StatusCode={response.StatusCode}");
 
                 default:
                     throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
