@@ -28,7 +28,7 @@ The component automatically handle token / session update with use of the refres
 
   <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
-    <PackageReference Include="ITfoxtec.Identity" Version="2.0.26" />
+    <PackageReference Include="ITfoxtec.Identity" Version="2.0.28" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
