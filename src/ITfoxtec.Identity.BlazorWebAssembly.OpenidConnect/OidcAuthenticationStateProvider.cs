@@ -79,7 +79,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 }
                 catch (TokenUnavailableException)
                 {
-                    await DeleteSessionAsync();
+                    await DeleteSessionAsync(false);
                     if (readInvalidSession)
                     {
                         return null;
@@ -132,11 +132,14 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             return userSession;
         }
 
-        public async Task DeleteSessionAsync()
+        public async Task DeleteSessionAsync(bool notify = true)
         {
             await sessionStorage.RemoveItemAsync(userSessionKey);
 
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            if(notify)
+            {
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            }
         }
     }
 }
