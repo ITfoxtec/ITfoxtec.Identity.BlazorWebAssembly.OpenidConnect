@@ -140,17 +140,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 CodeVerifier = openidClientPkceState.CodeVerifier,
             };
 
-            var tokenResource = globalOpenidClientPkceSettings.Resources.FirstOrDefault();
-            if (tokenResource != null)
-            {
-                
-            }
-        
-
             var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceState.OidcDiscoveryUri);
 
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             var requestDictionary = tokenRequest.ToDictionary().AddToDictionary(codeVerifierSecret);
+            var tokenResource = globalOpenidClientPkceSettings.Resources.FirstOrDefault();
             if (tokenResource != null)
             {
                 requestDictionary = requestDictionary.AddToDictionary(new {resource = tokenResource});
