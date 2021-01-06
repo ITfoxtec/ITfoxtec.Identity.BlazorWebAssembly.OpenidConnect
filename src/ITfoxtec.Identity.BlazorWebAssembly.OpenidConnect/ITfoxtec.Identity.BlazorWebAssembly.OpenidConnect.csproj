@@ -21,9 +21,9 @@ The component automatically handle token / session update with use of the refres
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>© 2020 ITfoxtec</Copyright>
-    <AssemblyVersion>1.2.15.0</AssemblyVersion>
-    <FileVersion>1.2.15.0</FileVersion>
-    <Version>1.2.15</Version>
+    <AssemblyVersion>1.2.16.0</AssemblyVersion>
+    <FileVersion>1.2.16.0</FileVersion>
+    <Version>1.2.16-segescustombuild2</Version>
   </PropertyGroup>
 
   <ItemGroup>
