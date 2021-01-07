@@ -108,16 +108,15 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             var claimsIdentity = claimsPrincipal.Identities.First();
 
-            var sessionClaims = new Dictionary<string, string>();
-            foreach(var claim in claimsIdentity.Claims)
-            {
-                sessionClaims.Add(claim.Type, claim.Value);
-            }
+            var claimsList = claimsIdentity
+                .Claims
+                .Select(c => new KeyValuePair<string,string>(c.Type, c.Value))
+                .ToList();
 
             var userSession = new OidcUserSession
             {
                 ValidUntil = validUntil,
-                Claims = sessionClaims,
+                Claims = claimsList,
                 AuthenticationType = claimsIdentity.AuthenticationType,
                 IdToken = tokenResponse.IdToken,
                 AccessToken = tokenResponse.AccessToken,
