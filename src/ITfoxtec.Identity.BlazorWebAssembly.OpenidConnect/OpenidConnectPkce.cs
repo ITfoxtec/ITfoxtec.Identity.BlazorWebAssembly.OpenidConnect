@@ -47,7 +47,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
                 ValidateResponseMode(openidClientPkceSettings.ResponseMode);
                 var loginCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LoginCallBackPath).OriginalString;
-                var state = await SaveStateAsync(openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId, loginCallBackUri, navigationManager.Uri, codeVerifier: codeVerifier, nonce: nonce);
+                var state = await SaveStateAsync(openidClientPkceSettings, loginCallBackUri, navigationManager.Uri, codeVerifier: codeVerifier, nonce: nonce);
 
                 var authenticationRequest = new AuthenticationRequest
                 {
@@ -65,19 +65,18 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     CodeChallengeMethod = IdentityConstants.CodeChallengeMethods.S256,
                 };
 
-                var nameValueCollection = authenticationRequest.ToDictionary().AddToDictionary(codeChallengeRequest);
-
+                var requestDictionary = authenticationRequest.ToDictionary().AddToDictionary(codeChallengeRequest);
                 if(openidClientPkceSettings.Resources?.Count() > 0)
                 {
                     var resourceRequest = new ResourceRequest
                     {
                         Resources = openidClientPkceSettings.Resources
                     };
-                    nameValueCollection = nameValueCollection.AddToDictionary(resourceRequest);
+                    requestDictionary = requestDictionary.AddToDictionary(resourceRequest);
                 }
 
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
-                var authorizationUri = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, nameValueCollection);
+                var authorizationUri = QueryHelpers.AddQueryString(oidcDiscovery.AuthorizationEndpoint, requestDictionary);
                 navigationManager.NavigateTo(authorizationUri, true);
 
             }
@@ -142,13 +141,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
             var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceState.OidcDiscoveryUri);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             var requestDictionary = tokenRequest.ToDictionary().AddToDictionary(codeVerifierSecret);
-            var tokenResource = globalOpenidClientPkceSettings.Resources.FirstOrDefault();
-            if (tokenResource != null)
+            if (openidClientPkceState.Resources?.Count() > 0)
             {
-                requestDictionary = requestDictionary.AddToDictionary(new {resource = tokenResource});
+                var resourceRequest = new ResourceRequest
+                {
+                    Resources = openidClientPkceState.Resources
+                };
+                requestDictionary = requestDictionary.AddToDictionary(resourceRequest);
             }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(requestDictionary);
 
             var httpClient = serviceProvider.GetService<HttpClient>();
@@ -198,7 +201,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             if (!userSession.RefreshToken.IsNullOrEmpty() && userSession.ValidUntil < DateTimeOffset.UtcNow.AddSeconds(globalOpenidClientPkceSettings.TokensExpiresBefore))
             {
-                var subject = userSession.Claims.Where(c => c.Key == JwtClaimTypes.Subject).Select(c => c.Value).SingleOrDefault();
+                var subject = userSession.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Select(c => c.Value).SingleOrDefault();
                 (var idTokenPrincipal, var tokenResponse) = await AcquireRefreshTokensAsync(userSession.OidcDiscoveryUri, userSession.ClientId, subject, userSession.RefreshToken);
 
                 var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
@@ -227,36 +230,43 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
-                    var result = await response.Content.ReadAsStringAsync();
-                    var tokenResponse = result.ToObject<TokenResponse>();
-                    tokenResponse.Validate(true);
-                    if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
-                    if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
+                    try
+                    {
+                        var result = await response.Content.ReadAsStringAsync();
+                        var tokenResponse = result.ToObject<TokenResponse>();
+                        tokenResponse.Validate(true);
+                        if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
+                        if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
-                    var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+                        var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
 
-                    // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
-                    // https://github.com/dotnet/aspnetcore/issues/26123
-                    // https://github.com/dotnet/runtime/issues/40074
+                        // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
+                        // https://github.com/dotnet/aspnetcore/issues/26123
+                        // https://github.com/dotnet/runtime/issues/40074
 
-                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId
+                        (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId
 #if NET50
-                        , validateSigningKey: false
+                            , validateSigningKey: false
 #endif
                         );
 
-                    if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
-                    {
-                        throw new Exception("New principal has invalid sub claim.");
-                    }
+                        if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
+                        {
+                            throw new Exception("New principal has invalid sub claim.");
+                        }
 
-                    return (idTokenPrincipal, tokenResponse);
+                        return (idTokenPrincipal, tokenResponse);
+                    }
+                    catch (ResponseErrorException rex)
+                    {
+                        throw new TokenUnavailableException(rex.Message, rex);
+                    }
 
                 case HttpStatusCode.BadRequest:
                     var resultBadRequest = await response.Content.ReadAsStringAsync();
                     var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
                     tokenResponseBadRequest.Validate(true);
-                    throw new TokenUnavailableException($"Error, Bad request. StatusCode={response.StatusCode}");
+                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
 
                 default:
                     throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
@@ -270,7 +280,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 openidClientPkceSettings = openidClientPkceSettings ?? globalOpenidClientPkceSettings;
 
                 var logoutCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LogoutCallBackPath).OriginalString;
-                var state = await SaveStateAsync(openidClientPkceSettings.OidcDiscoveryUri, openidClientPkceSettings.ClientId, logoutCallBackUri, navigationManager.Uri);
+                var state = await SaveStateAsync(openidClientPkceSettings, logoutCallBackUri, navigationManager.Uri);
 
                 var idTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(readInvalidSession: true);
                 if(idTokenHint.IsNullOrEmpty())
@@ -354,13 +364,14 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        private async Task<string> SaveStateAsync(string oidcDiscoveryUri, string clientId, string callBackUri, string redirectUri, string codeVerifier = null, string nonce = null)
+        private async Task<string> SaveStateAsync(OpenidConnectPkceSettings openidConnectPkceSettings, string callBackUri, string redirectUri, string codeVerifier = null, string nonce = null)
         {
             var state = RandomGenerator.GenerateNonce(32);
             var openidClientPkceState = new OpenidConnectPkceState
             {
-                OidcDiscoveryUri = oidcDiscoveryUri,
-                ClientId = clientId,
+                OidcDiscoveryUri = openidConnectPkceSettings.OidcDiscoveryUri,
+                ClientId = openidConnectPkceSettings.ClientId,
+                Resources = openidConnectPkceSettings.Resources,
                 CallBackUri = callBackUri,
                 RedirectUri = redirectUri,
                 CodeVerifier = codeVerifier,

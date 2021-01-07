@@ -1,4 +1,5 @@
 ﻿using Blazored.SessionStorage;
+using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.Models;
 using ITfoxtec.Identity.Messages;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var userSession = await GetUserSessionAsync();
             if (userSession != null)
             {
-                return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Key, c.Value)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
+                return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Type, c.Value)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
             }
             else
             {
@@ -107,11 +108,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         private async Task<OidcUserSession> CreateUpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, string oidcDiscoveryUri, string clientId)
         {
             var claimsIdentity = claimsPrincipal.Identities.First();
-
-            var claimsList = claimsIdentity
-                .Claims
-                .Select(c => new KeyValuePair<string,string>(c.Type, c.Value))
-                .ToList();
+            var claimsList = claimsIdentity.Claims.Select(c => new ClaimValue { Type = c.Type, Value = c.Value }).ToList();
 
             var userSession = new OidcUserSession
             {
