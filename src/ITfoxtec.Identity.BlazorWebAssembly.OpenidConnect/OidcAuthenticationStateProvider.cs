@@ -33,12 +33,19 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
         protected async Task<ClaimsPrincipal> GetClaimsPrincipalAsync()
         {
-            var userSession = await GetUserSessionAsync();
-            if (userSession != null)
+            try
             {
-                return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Type, c.Value)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
+                var userSession = await GetUserSessionAsync();
+                if (userSession != null)
+                {
+                    return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Type, c.Value)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
+                }
+                else
+                {
+                    return new ClaimsPrincipal(new ClaimsIdentity());
+                }
             }
-            else
+            catch (TokenUnavailableException)
             {
                 return new ClaimsPrincipal(new ClaimsIdentity());
             }
