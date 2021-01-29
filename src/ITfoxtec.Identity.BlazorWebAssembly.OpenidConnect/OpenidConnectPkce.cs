@@ -104,19 +104,17 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 if (authenticationResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(authenticationResponse.State), authenticationResponse.GetTypeName());
 
                 var openidClientPkceState = await GetState(authenticationResponse.State);
-                if (openidClientPkceState == null)
+                if (openidClientPkceState != null)
                 {
-                    throw new SecurityException($"State '{authenticationResponse.State}' do not exist.");
+                    (var idTokenPrincipal, var tokenResponse) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
+
+                    var sessionResponse = responseQuery.ToObject<SessionResponse>();
+                    sessionResponse.Validate();
+
+                    var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                    await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
+                    navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
                 }
-
-                (var idTokenPrincipal, var tokenResponse) = await AcquireTokensAsync(openidClientPkceState, authenticationResponse.Code);
-
-                var sessionResponse = responseQuery.ToObject<SessionResponse>();
-                sessionResponse.Validate();
-
-                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
-                navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
             }
             catch (Exception ex)
             {
@@ -314,13 +312,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 if (endSessionResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(endSessionResponse.State), endSessionResponse.GetTypeName());
 
                 var openidClientPkceState = await GetState(endSessionResponse.State);
-                if (openidClientPkceState == null)
+                if (openidClientPkceState != null)
                 {
-                    throw new SecurityException($"State '{endSessionResponse.State}' do not exist.");
+                    await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
+                    navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
                 }
-
-                await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
-                navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
             }
             catch (Exception ex)
             {
