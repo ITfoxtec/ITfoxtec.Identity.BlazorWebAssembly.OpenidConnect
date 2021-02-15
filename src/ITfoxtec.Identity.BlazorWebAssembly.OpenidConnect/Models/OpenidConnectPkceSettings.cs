@@ -45,7 +45,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         /// </summary>
         public string Scope { get; set; } 
 
-        private IEnumerable<string> DefaultScope = new[] { IdentityConstants.DefaultOidcScopes.OpenId, IdentityConstants.DefaultOidcScopes.Profile };
+        private IEnumerable<string> DefaultScope = new[] { IdentityConstants.DefaultOidcScopes.OpenId };
 
         public IEnumerable<string> AllScope 
         { 
