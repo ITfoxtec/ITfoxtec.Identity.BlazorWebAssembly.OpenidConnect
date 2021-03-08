@@ -176,7 +176,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 #endif
                         );
 
-                    var nonce = idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Nonce).Select(c => c.Value).SingleOrDefault();
+                    var nonce = idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Nonce).Select(c => c.Value).FirstOrDefault();
                     if (!openidClientPkceState.Nonce.Equals(nonce, StringComparison.Ordinal))
                     {
                         throw new SecurityException("Nonce do not match.");
