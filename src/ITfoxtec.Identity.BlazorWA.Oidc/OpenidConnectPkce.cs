@@ -327,12 +327,12 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
         private Dictionary<string, string> GetResponseQuery(string responseUrl)
         {
-            var responseSplit = responseUrl.Split(responseUrl.Contains('#') ? '#' : '?');
-            if (responseUrl.Count() <= 1)
+            var rUri = new Uri(responseUrl);                        
+            if (rUri.Query.IsNullOrWhiteSpace() && rUri.Fragment.IsNullOrWhiteSpace())
             {
                 throw new SecurityException("Invalid response URL.");
             }
-            return QueryHelpers.ParseQuery(responseSplit[1]).ToDictionary();
+            return QueryHelpers.ParseQuery(!rUri.Query.IsNullOrWhiteSpace() ? rUri.Query : rUri.Fragment).ToDictionary();
         }
 
         private async Task<OidcDiscovery> GetOidcDiscoveryAsync(string oidcDiscoveryUri)
