@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30105.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebAssemblyOidcSample.Server", "samples\BlazorWebAssemblyOidcSample.Server\BlazorWebAssemblyOidcSample.Server.csproj", "{27F329FF-AE82-483C-91D4-457F11D5EC74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWAOidcSample.Server", "samples\BlazorWAOidcSample.Server\BlazorWAOidcSample.Server.csproj", "{27F329FF-AE82-483C-91D4-457F11D5EC74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebAssemblyOidcSample.Client", "samples\BlazorWebAssemblyOidcSample.Client\BlazorWebAssemblyOidcSample.Client.csproj", "{4EF84219-9A87-462F-AF94-21A656587BE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWAOidcSample.Client", "samples\BlazorWAOidcSample.Client\BlazorWAOidcSample.Client.csproj", "{4EF84219-9A87-462F-AF94-21A656587BE8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebAssemblyOidcSample.Shared", "samples\BlazorWebAssemblyOidcSample.Shared\BlazorWebAssemblyOidcSample.Shared.csproj", "{A8E24706-23F4-464D-99EE-AEE291CF7C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWAOidcSample.Shared", "samples\BlazorWAOidcSample.Shared\BlazorWAOidcSample.Shared.csproj", "{A8E24706-23F4-464D-99EE-AEE291CF7C71}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{1F3C3DA2-AB8F-4319-A735-ECFDA7D83F79}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{1F3C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1E56ADB8-9BA2-448F-8AF5-2CE87999A9C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect", "src\ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect\ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.csproj", "{0F906965-671F-4BD7-9939-03D27C792CD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ITfoxtec.Identity.BlazorWA.Oidc", "src\ITfoxtec.Identity.BlazorWA.Oidc\ITfoxtec.Identity.BlazorWA.Oidc.csproj", "{0F906965-671F-4BD7-9939-03D27C792CD3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{56306BD2-2D2E-43D5-8DC1-C586679F79EE}"
 	ProjectSection(SolutionItems) = preProject

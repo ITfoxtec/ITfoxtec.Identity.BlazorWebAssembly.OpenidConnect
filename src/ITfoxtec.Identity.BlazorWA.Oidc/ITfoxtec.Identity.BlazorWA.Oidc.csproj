@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
-    
+    <AssemblyName>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</AssemblyName>
     <RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
 
     <Authors>Anders Revsgaard</Authors>

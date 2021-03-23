@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>BlazorWebAssemblyOidcSample.Client</AssemblyName>
+    <RootNamespace>BlazorWebAssemblyOidcSample.Client</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect\ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.csproj" />
-    <ProjectReference Include="..\BlazorWebAssemblyOidcSample.Shared\BlazorWebAssemblyOidcSample.Shared.csproj" />
+    <ProjectReference Include="..\..\src\ITfoxtec.Identity.BlazorWA.Oidc\ITfoxtec.Identity.BlazorWA.Oidc.csproj" />
+    <ProjectReference Include="..\BlazorWAOidcSample.Shared\BlazorWAOidcSample.Shared.csproj" />
   </ItemGroup>
   
 </Project>
