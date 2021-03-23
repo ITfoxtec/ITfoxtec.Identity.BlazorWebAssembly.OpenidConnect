@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebAssemblyOidcSample.Shared", "samples\BlazorWebAssemblyOidcSample.Shared\BlazorWebAssemblyOidcSample.Shared.csproj", "{A8E24706-23F4-464D-99EE-AEE291CF7C71}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{1F3C3DA2-AB8F-4319-A735-ECFDA7D83F79}"
+	ProjectSection(SolutionItems) = preProject
+		samples\README.md = samples\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1E56ADB8-9BA2-448F-8AF5-2CE87999A9C4}"
 EndProject
