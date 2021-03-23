@@ -199,7 +199,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             if (!userSession.RefreshToken.IsNullOrEmpty() && userSession.ValidUntil < DateTimeOffset.UtcNow.AddSeconds(globalOpenidClientPkceSettings.TokensExpiresBefore))
             {
-                var subject = userSession.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Select(c => c.Value).SingleOrDefault();
+                var subject = userSession.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Select(c => c.Value).SingleOrDefault();
                 (var idTokenPrincipal, var tokenResponse) = await AcquireRefreshTokensAsync(userSession.OidcDiscoveryUri, userSession.ClientId, subject, userSession.RefreshToken);
 
                 var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
@@ -242,13 +242,14 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         // https://github.com/dotnet/aspnetcore/issues/26123
                         // https://github.com/dotnet/runtime/issues/40074
 
-                        (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId
+                        (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
+                            nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType
 #if NET50
                             , validateSigningKey: false
 #endif
                         );
 
-                        if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
+                        if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Single().Value)
                         {
                             throw new Exception("New principal has invalid sub claim.");
                         }
