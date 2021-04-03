@@ -279,21 +279,21 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 openidClientPkceSettings = openidClientPkceSettings ?? globalOpenidClientPkceSettings;
 
                 var logoutCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LogoutCallBackPath).OriginalString;
-                var state = await SaveStateAsync(openidClientPkceSettings, logoutCallBackUri, navigationManager.Uri);
+                var state = await SaveStateAsync(openidClientPkceSettings, logoutCallBackUri, navigationManager.BaseUri);
 
                 var idTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(readInvalidSession: true);
                 if(idTokenHint.IsNullOrEmpty())
                 {
                     navigationManager.NavigateTo(logoutCallBackUri, true);
                 }
-                var endSessionRequest = new EndSessionRequest
+                var rpInitiatedLogoutRequest = new RpInitiatedLogoutRequest
                 {
                     IdTokenHint = idTokenHint,
                     PostLogoutRedirectUri = logoutCallBackUri,
                     State = state
                 };
 
-                var nameValueCollection = endSessionRequest.ToDictionary();
+                var nameValueCollection = rpInitiatedLogoutRequest.ToDictionary();
                 var oidcDiscovery = await GetOidcDiscoveryAsync(openidClientPkceSettings.OidcDiscoveryUri);
                 var endSessionEndpointUri = QueryHelpers.AddQueryString(oidcDiscovery.EndSessionEndpoint, nameValueCollection);
                 navigationManager.NavigateTo(endSessionEndpointUri, true);
@@ -308,11 +308,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             try
             {
-                var endSessionResponse = GetResponseQuery(responseUrl).ToObject<EndSessionResponse>();
-                endSessionResponse.Validate();
-                if (endSessionResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(endSessionResponse.State), endSessionResponse.GetTypeName());
+                var rpInitiatedLogoutResponse = GetResponseQuery(responseUrl).ToObject<RpInitiatedLogoutResponse>();
+                rpInitiatedLogoutResponse.Validate();
+                if (rpInitiatedLogoutResponse.State.IsNullOrEmpty()) throw new ArgumentNullException(nameof(rpInitiatedLogoutResponse.State), rpInitiatedLogoutResponse.GetTypeName());
 
-                var openidClientPkceState = await GetState(endSessionResponse.State);
+                var openidClientPkceState = await GetState(rpInitiatedLogoutResponse.State);
                 if (openidClientPkceState != null)
                 {
                     await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
@@ -322,6 +322,30 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             catch (Exception ex)
             {
                 throw new SecurityException($"Failed to handle logout call back, response URL '{responseUrl}'.", ex);
+            }
+        }
+
+        public async Task FrontChannelLogoutAsync(string url)
+        {
+            try
+            {
+                var frontChannelLogoutRequest = GetResponseQuery(url).ToObject<FrontChannelLogoutRequest>();
+                frontChannelLogoutRequest.Validate();
+                if (frontChannelLogoutRequest.SessionId.IsNullOrEmpty()) throw new ArgumentNullException(nameof(frontChannelLogoutRequest.SessionId), frontChannelLogoutRequest.GetTypeName());
+
+                var authenticationState = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetAuthenticationStateAsync();
+                if (authenticationState.User.Claims.Where(c => c.Type == JwtClaimTypes.SessionId && c.Issuer == frontChannelLogoutRequest.Issuer && c.Value == frontChannelLogoutRequest.SessionId).Any())
+                {
+                    await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
+                }
+                else
+                {
+                    throw new Exception("Invalid issuer and session ID.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityException($"Failed to handle logout call back, response URL '{url}'.", ex);
             }
         }
 
