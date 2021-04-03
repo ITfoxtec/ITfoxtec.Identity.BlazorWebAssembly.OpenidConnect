@@ -67,7 +67,6 @@ Response types: code
 Enable PKCE: true
 Login call back: ...base URL.../authentication/login_callback
 Logout call back: ...base URL.../authentication/logout_callback
-Front channel logout: ...base URL.../authentication/front_channel_logout
 ```
 
 ### API calls to another domain
