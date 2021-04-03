@@ -51,11 +51,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public string LogoutCallBackPath => $"authentication/{LogoutCallBackPage}";
 
         /// <summary>
-        /// Front channel logout page.
-        /// </summary>
-        public string FrontChannelLogoutPage { get; set; } = "front_channel_logout";
-
-        /// <summary>
         /// Gets or sets the space separated list of scopes to request.
         /// </summary>
         public string Scope { get; set; } 

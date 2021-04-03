@@ -325,30 +325,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        public async Task FrontChannelLogoutAsync(string url)
-        {
-            try
-            {
-                var frontChannelLogoutRequest = GetResponseQuery(url).ToObject<FrontChannelLogoutRequest>();
-                frontChannelLogoutRequest.Validate();
-                if (frontChannelLogoutRequest.SessionId.IsNullOrEmpty()) throw new ArgumentNullException(nameof(frontChannelLogoutRequest.SessionId), frontChannelLogoutRequest.GetTypeName());
-
-                var authenticationState = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetAuthenticationStateAsync();
-                if (authenticationState.User.Claims.Where(c => c.Type == JwtClaimTypes.SessionId && c.Issuer == frontChannelLogoutRequest.Issuer && c.Value == frontChannelLogoutRequest.SessionId).Any())
-                {
-                    await (authenticationStateProvider as OidcAuthenticationStateProvider).DeleteSessionAsync();
-                }
-                else
-                {
-                    throw new Exception("Invalid issuer and session ID.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new SecurityException($"Failed to handle logout call back, response URL '{url}'.", ex);
-            }
-        }
-
         private Dictionary<string, string> GetResponseQuery(string responseUrl)
         {
             var rUri = new Uri(responseUrl);                        

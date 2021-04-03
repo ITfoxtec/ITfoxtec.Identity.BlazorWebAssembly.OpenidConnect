@@ -28,10 +28,6 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             {
                 await openidConnectPkce.LogoutCallBackAsync(navigationManager.Uri);
             }
-            else if (openidConnectPkceSettings.FrontChannelLogoutPage.Equals(Action, StringComparison.OrdinalIgnoreCase))
-            {
-                await openidConnectPkce.FrontChannelLogoutAsync(navigationManager.Uri);
-            }
             else
             {
                 throw new Exception($"Action '{Action}' not supported.");
