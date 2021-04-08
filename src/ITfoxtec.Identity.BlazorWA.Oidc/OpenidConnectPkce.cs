@@ -61,7 +61,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 };
                 var codeChallengeRequest = new CodeChallengeSecret
                 {
-                    CodeChallenge = await codeVerifier.Sha256HashBase64urlEncoded(),
+                    CodeChallenge = await codeVerifier.Sha256HashBase64urlEncodedAsync(),
                     CodeChallengeMethod = IdentityConstants.CodeChallengeMethods.S256,
                 };
 
