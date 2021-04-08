@@ -31,14 +31,24 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public string ResponseMode { get; set; } = IdentityConstants.ResponseModes.Fragment;
 
         /// <summary>
+        /// Login call back page.
+        /// </summary>
+        public string LoginCallBackPage { get; set; } = "login_callback";
+
+        /// <summary>
         /// Login call back path.
         /// </summary>
-        public string LoginCallBackPath { get; set; } = "authentication/login_callback";
+        public string LoginCallBackPath => $"authentication/{LoginCallBackPage}";
+
+        /// <summary>
+        /// Logout call back page.
+        /// </summary>
+        public string LogoutCallBackPage { get; set; } = "logout_callback";
 
         /// <summary>
         /// Logout call back path.
         /// </summary>
-        public string LogoutCallBackPath { get; set; } = "authentication/logout_callback";
+        public string LogoutCallBackPath => $"authentication/{LogoutCallBackPage}";
 
         /// <summary>
         /// Gets or sets the space separated list of scopes to request.

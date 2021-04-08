@@ -7,6 +7,9 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
     public class AuthenticationPageBase : ComponentBase
     {
         [Inject]
+        protected OpenidConnectPkceSettings openidConnectPkceSettings { get; set; }
+
+        [Inject]
         protected OpenidConnectPkce openidConnectPkce { get; set; }
 
         [Inject]
@@ -17,11 +20,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
         protected override async Task OnInitializedAsync()
         {
-            if ("login_callback".Equals(Action, StringComparison.OrdinalIgnoreCase))
+            if (openidConnectPkceSettings.LoginCallBackPage.Equals(Action, StringComparison.OrdinalIgnoreCase))
             {
                 await openidConnectPkce.LoginCallBackAsync(navigationManager.Uri);
             }
-            else if ("logout_callback".Equals(Action, StringComparison.OrdinalIgnoreCase))
+            else if (openidConnectPkceSettings.LogoutCallBackPage.Equals(Action, StringComparison.OrdinalIgnoreCase))
             {
                 await openidConnectPkce.LogoutCallBackAsync(navigationManager.Uri);
             }
