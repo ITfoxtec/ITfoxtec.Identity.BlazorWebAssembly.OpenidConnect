@@ -254,6 +254,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                             throw new Exception("New principal has invalid sub claim.");
                         }
 
+                        if (tokenResponse.RefreshToken.IsNullOrEmpty())
+                        {
+                            tokenResponse.RefreshToken = refreshToken;
+                        }
+
                         return (idTokenPrincipal, tokenResponse);
                     }
                     catch (ResponseErrorException rex)
