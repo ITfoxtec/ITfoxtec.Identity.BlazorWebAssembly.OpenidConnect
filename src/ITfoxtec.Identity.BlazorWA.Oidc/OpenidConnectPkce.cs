@@ -152,8 +152,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(requestDictionary);
 
-            var httpClient = serviceProvider.GetService<HttpClient>();
-            var response = await httpClient.SendAsync(request);
+            var response = await GetHttpClient().SendAsync(request);
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -223,8 +222,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(tokenRequest.ToDictionary());
 
-            var httpClient = serviceProvider.GetService<HttpClient>();
-            var response = await httpClient.SendAsync(request);
+            var response = await GetHttpClient().SendAsync(request);
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -267,14 +265,27 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     }
 
                 case HttpStatusCode.BadRequest:
-                    var resultBadRequest = await response.Content.ReadAsStringAsync();
-                    var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
-                    tokenResponseBadRequest.Validate(true);
-                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
+                    try
+                    {
+                        var resultBadRequest = await response.Content.ReadAsStringAsync();
+                        var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
+                        tokenResponseBadRequest.Validate(true);
+                        throw new TokenUnavailableException($"Error, Bad request. StatusCode={response.StatusCode}");
+                    }
+                    catch (ResponseErrorException rex)
+                    {
+                        throw new TokenUnavailableException(rex.Message, rex);
+                    }
 
                 default:
-                    throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
+                    throw new TokenUnavailableException($"Error, Status Code not expected. StatusCode={response.StatusCode}");
             }
+        }
+
+        private HttpClient GetHttpClient()
+        {
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            return httpClientFactory.CreateClient();
         }
 
         public async Task LogoutAsync(OpenidConnectPkceSettings openidClientPkceSettings = null)
