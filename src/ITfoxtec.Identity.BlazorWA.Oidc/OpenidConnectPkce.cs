@@ -111,7 +111,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     var sessionResponse = responseQuery.ToObject<SessionResponse>();
                     sessionResponse.Validate();
 
-                    var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                    var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 0).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                     await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
                     navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
                 }
@@ -201,7 +201,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var subject = userSession.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Select(c => c.Value).SingleOrDefault();
                 (var idTokenPrincipal, var tokenResponse) = await AcquireRefreshTokensAsync(userSession.OidcDiscoveryUri, userSession.ClientId, subject, userSession.RefreshToken);
 
-                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 0).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                 return await (authenticationStateProvider as OidcAuthenticationStateProvider).UpdateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, userSession.SessionState, userSession);
             }
 
