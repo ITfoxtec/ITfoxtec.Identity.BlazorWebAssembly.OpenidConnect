@@ -5,6 +5,9 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
     public class OpenidConnectPkceSettings
     {
+        const string loginCallBackPage = "login_callback";
+        const string logoutCallBackPage = "logout_callback";
+
         /// <summary>
         /// Gets or sets the Authority to use when making OpenIdConnect calls.
         /// </summary>
@@ -33,22 +36,22 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         /// <summary>
         /// Login call back page.
         /// </summary>
-        public string LoginCallBackPage { get; set; } = "login_callback";
+        public string LoginCallBackPage { get; set; } = loginCallBackPage;
 
         /// <summary>
         /// Login call back path.
         /// </summary>
-        public string LoginCallBackPath => $"authentication/{LoginCallBackPage}";
+        public string LoginCallBackPath { get; set; } = $"authentication/{loginCallBackPage}";
 
         /// <summary>
         /// Logout call back page.
         /// </summary>
-        public string LogoutCallBackPage { get; set; } = "logout_callback";
+        public string LogoutCallBackPage { get; set; } = logoutCallBackPage;
 
         /// <summary>
         /// Logout call back path.
         /// </summary>
-        public string LogoutCallBackPath => $"authentication/{LogoutCallBackPage}";
+        public string LogoutCallBackPath { get; set; } = $"authentication/{logoutCallBackPage}";
 
         /// <summary>
         /// Gets or sets the space separated list of scopes to request.

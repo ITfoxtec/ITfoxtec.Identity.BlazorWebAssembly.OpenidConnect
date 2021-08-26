@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.1</TargetFrameworks>
     <AssemblyName>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</AssemblyName>
     <RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
 
@@ -21,14 +21,14 @@ The component automatically handle token / session update with use of the refres
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>© 2020 ITfoxtec</Copyright>
-    <AssemblyVersion>1.4.4.0</AssemblyVersion>
-    <FileVersion>1.4.4.0</FileVersion>
-    <Version>1.4.4</Version>
+    <AssemblyVersion>1.4.13.0</AssemblyVersion>
+    <FileVersion>1.4.13.0</FileVersion>
+    <Version>1.4.13</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="1.0.13" />
-    <PackageReference Include="ITfoxtec.Identity" Version="2.2.3" />
+    <PackageReference Include="ITfoxtec.Identity" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
@@ -49,20 +49,21 @@ The component automatically handle token / session update with use of the refres
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.12" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
     <DefineConstants>NETSTANDARD2;NETSTANDARD</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
   </PropertyGroup>

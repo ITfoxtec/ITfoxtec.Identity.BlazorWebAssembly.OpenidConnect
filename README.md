@@ -195,4 +195,4 @@ The _LoginDisplay_ can be added to the _MainLayout.razor_ like this.
 ```
 
 ### Support
-If you have a question please ask it on <a href="https://stackoverflow.com">Stack Overflow</a> and email me a link on support@itfoxtec.com. I will answer as soon as possible.
+If you have questions please ask them on [Stack Overflow](https://stackoverflow.com/questions/tagged/itfoxtec-identity-blazor). Tag your questions with 'itfoxtec-identity-blazor' and I will answer as soon as possible.

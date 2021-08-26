@@ -111,7 +111,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     var sessionResponse = responseQuery.ToObject<SessionResponse>();
                     sessionResponse.Validate();
 
-                    var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                    var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 0).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                     await (authenticationStateProvider as OidcAuthenticationStateProvider).CreateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, sessionResponse.SessionState, openidClientPkceState);
                     navigationManager.NavigateTo(openidClientPkceState.RedirectUri, true);
                 }
@@ -152,8 +152,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(requestDictionary);
 
-            var httpClient = serviceProvider.GetService<HttpClient>();
-            var response = await httpClient.SendAsync(request);
+            var response = await GetHttpClient().SendAsync(request);
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -202,7 +201,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var subject = userSession.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Select(c => c.Value).SingleOrDefault();
                 (var idTokenPrincipal, var tokenResponse) = await AcquireRefreshTokensAsync(userSession.OidcDiscoveryUri, userSession.ClientId, subject, userSession.RefreshToken);
 
-                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
+                var validUntil = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 0).AddSeconds(-globalOpenidClientPkceSettings.TokensExpiresBefore);
                 return await (authenticationStateProvider as OidcAuthenticationStateProvider).UpdateSessionAsync(validUntil, idTokenPrincipal, tokenResponse, userSession.SessionState, userSession);
             }
 
@@ -223,8 +222,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(tokenRequest.ToDictionary());
 
-            var httpClient = serviceProvider.GetService<HttpClient>();
-            var response = await httpClient.SendAsync(request);
+            var response = await GetHttpClient().SendAsync(request);
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -254,6 +252,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                             throw new Exception("New principal has invalid sub claim.");
                         }
 
+                        if (tokenResponse.RefreshToken.IsNullOrEmpty())
+                        {
+                            tokenResponse.RefreshToken = refreshToken;
+                        }
+
                         return (idTokenPrincipal, tokenResponse);
                     }
                     catch (ResponseErrorException rex)
@@ -262,14 +265,27 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     }
 
                 case HttpStatusCode.BadRequest:
-                    var resultBadRequest = await response.Content.ReadAsStringAsync();
-                    var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
-                    tokenResponseBadRequest.Validate(true);
-                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
+                    try
+                    {
+                        var resultBadRequest = await response.Content.ReadAsStringAsync();
+                        var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
+                        tokenResponseBadRequest.Validate(true);
+                        throw new TokenUnavailableException($"Error, Bad request. StatusCode={response.StatusCode}");
+                    }
+                    catch (ResponseErrorException rex)
+                    {
+                        throw new TokenUnavailableException(rex.Message, rex);
+                    }
 
                 default:
-                    throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
+                    throw new TokenUnavailableException($"Error, Status Code not expected. StatusCode={response.StatusCode}");
             }
+        }
+
+        private HttpClient GetHttpClient()
+        {
+            var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            return httpClientFactory.CreateClient();
         }
 
         public async Task LogoutAsync(OpenidConnectPkceSettings openidClientPkceSettings = null)
