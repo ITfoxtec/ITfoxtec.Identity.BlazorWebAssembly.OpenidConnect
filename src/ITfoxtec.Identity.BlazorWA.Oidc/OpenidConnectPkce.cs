@@ -348,8 +348,12 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             {
                 throw new SecurityException("Invalid response URL.");
             }
-            return QueryHelpers.ParseQuery(!rUri.Query.IsNullOrWhiteSpace() ? rUri.Query : rUri.Fragment).ToDictionary();
-        }
+
+            string fragment = rUri.Fragment;
+            if (fragment[0] == '#')
+                fragment = fragment.Substring(1);
+            
+            return QueryHelpers.ParseQuery(!rUri.Query.IsNullOrWhiteSpace() ? rUri.Query : fragment).ToDictionary();        }
 
         private async Task<OidcDiscovery> GetOidcDiscoveryAsync(string oidcDiscoveryUri)
         {
