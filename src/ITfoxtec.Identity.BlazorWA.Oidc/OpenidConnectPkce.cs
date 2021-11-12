@@ -295,7 +295,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 openidClientPkceSettings = openidClientPkceSettings ?? globalOpenidClientPkceSettings;
 
                 var logoutCallBackUri = new Uri(new Uri(navigationManager.BaseUri), openidClientPkceSettings.LogoutCallBackPath).OriginalString;
-                var state = await SaveStateAsync(openidClientPkceSettings, logoutCallBackUri, navigationManager.BaseUri);
+                var state = await SaveStateAsync(openidClientPkceSettings, logoutCallBackUri, navigationManager.Uri);
 
                 var idTokenHint = await (authenticationStateProvider as OidcAuthenticationStateProvider).GetIdToken(readInvalidSession: true);
                 if(idTokenHint.IsNullOrEmpty())
