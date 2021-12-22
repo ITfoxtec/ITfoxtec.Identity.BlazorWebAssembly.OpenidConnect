@@ -1,6 +1,5 @@
 ﻿using Blazored.SessionStorage;
 using ITfoxtec.Identity.Discovery;
-using ITfoxtec.Identity.Models;
 using ITfoxtec.Identity.Messages;
 using ITfoxtec.Identity.Tokens;
 using ITfoxtec.Identity.Util;
@@ -162,18 +161,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
                     if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
-                    var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
+                    //var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
 
-                    // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
-                    // https://github.com/dotnet/aspnetcore/issues/26123
-                    // https://github.com/dotnet/runtime/issues/40074
+                    //(var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
+                    //    nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
+                    // Changed to only read ID token and not do validation
 
-                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
-                        nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType
-#if NET50
-                        , validateSigningKey: false
-#endif
-                        );
+                    var idTokenPrincipal = JwtHandler.ReadTokenClaims(tokenResponse.IdToken);
 
                     var nonce = idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Nonce).Select(c => c.Value).FirstOrDefault();
                     if (!openidClientPkceState.Nonce.Equals(nonce, StringComparison.Ordinal))
@@ -234,18 +228,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
                         if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
-                        var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+                        //var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
 
-                        // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
-                        // https://github.com/dotnet/aspnetcore/issues/26123
-                        // https://github.com/dotnet/runtime/issues/40074
+                        //(var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
+                        //    nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
+                        // Changed to only read ID token and not do validation
 
-                        (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
-                            nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType
-#if NET50
-                            , validateSigningKey: false
-#endif
-                        );
+                        var idTokenPrincipal = JwtHandler.ReadTokenClaims(tokenResponse.IdToken);
 
                         if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Single().Value)
                         {
@@ -364,18 +353,19 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        private async Task<JsonWebKeySet> GetOidcDiscoveryKeysAsync(string oidcDiscoveryUri)
-        {
-            try
-            {
-                var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
-                return await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to fetch OIDC Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
-            }
-        }
+        // Changed to only read ID token and not do validation
+        //private async Task<JsonWebKeySet> GetOidcDiscoveryKeysAsync(string oidcDiscoveryUri)
+        //{
+        //    try
+        //    {
+        //        var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
+        //        return await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Failed to fetch OIDC Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
+        //    }
+        //}
 
         private async Task<string> SaveStateAsync(OpenidConnectPkceSettings openidConnectPkceSettings, string callBackUri, string redirectUri, string codeVerifier = null, string nonce = null)
         {
