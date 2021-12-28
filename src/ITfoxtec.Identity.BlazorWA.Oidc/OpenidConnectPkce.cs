@@ -15,6 +15,9 @@ using System.Net.Http;
 using System.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
+#if !NET50 && !NET60 
+using ITfoxtec.Identity.Models;
+#endif
 
 namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
@@ -161,13 +164,19 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
                     if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
-                    //var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
+                    // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
+                    // https://github.com/dotnet/aspnetcore/issues/26123
+                    // https://github.com/dotnet/runtime/issues/40074
+                    // .NET 7
+                    // https://github.com/dotnet/designs/blob/main/accepted/2021/blazor-wasm-crypto.md#net-7-plan
+#if !NET50 && !NET60 
+                    var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
 
-                    //(var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
-                    //    nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
-                    // Changed to only read ID token and not do validation
-
+                    (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
+                        nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
+#else
                     var idTokenPrincipal = JwtHandler.ReadTokenClaims(tokenResponse.IdToken);
+#endif
 
                     var nonce = idTokenPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Nonce).Select(c => c.Value).FirstOrDefault();
                     if (!openidClientPkceState.Nonce.Equals(nonce, StringComparison.Ordinal))
@@ -228,13 +237,19 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
                         if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
 
-                        //var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+                        // .NET 5.0 error, System.Security.Cryptography.RSA.Create() - System.PlatformNotSupportedException: System.Security.Cryptography.Algorithms is not supported on this platform.
+                        // https://github.com/dotnet/aspnetcore/issues/26123
+                        // https://github.com/dotnet/runtime/issues/40074
+                        // .NET 7
+                        // https://github.com/dotnet/designs/blob/main/accepted/2021/blazor-wasm-crypto.md#net-7-plan
+#if !NET50 && !NET60
+                        var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
 
-                        //(var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
-                        //    nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
-                        // Changed to only read ID token and not do validation
-
+                        (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
+                            nameClaimType: globalOpenidClientPkceSettings.NameClaimType, roleClaimType: globalOpenidClientPkceSettings.RoleClaimType);
+#else
                         var idTokenPrincipal = JwtHandler.ReadTokenClaims(tokenResponse.IdToken);
+#endif
 
                         if (!subject.IsNullOrEmpty() && subject != idTokenPrincipal.Claims.Where(c => c.Type == globalOpenidClientPkceSettings.NameClaimType).Single().Value)
                         {
@@ -353,19 +368,20 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        // Changed to only read ID token and not do validation
-        //private async Task<JsonWebKeySet> GetOidcDiscoveryKeysAsync(string oidcDiscoveryUri)
-        //{
-        //    try
-        //    {
-        //        var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
-        //        return await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Failed to fetch OIDC Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
-        //    }
-        //}
+#if !NET50 && !NET60 
+        private async Task<JsonWebKeySet> GetOidcDiscoveryKeysAsync(string oidcDiscoveryUri)
+        {
+            try
+            {
+                var oidcDiscoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
+                return await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch OIDC Discovery Keys from discovery '{oidcDiscoveryUri}'.", ex);
+            }
+        }
+#endif
 
         private async Task<string> SaveStateAsync(OpenidConnectPkceSettings openidConnectPkceSettings, string callBackUri, string redirectUri, string codeVerifier = null, string nonce = null)
         {
