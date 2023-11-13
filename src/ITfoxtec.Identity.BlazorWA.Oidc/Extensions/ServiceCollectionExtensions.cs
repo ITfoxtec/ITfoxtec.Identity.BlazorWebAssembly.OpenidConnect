@@ -29,7 +29,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 #endif
 
             services.AddScoped<AuthenticationStateProvider, OidcAuthenticationStateProvider>();
-#if NETSTANDARD
+#if !NET50 && !NET60 && !NET70 
             services.AddTransient<AccessTokenMessageHandler>();            
 #else
             services.AddScoped<AccessTokenMessageHandler>();
