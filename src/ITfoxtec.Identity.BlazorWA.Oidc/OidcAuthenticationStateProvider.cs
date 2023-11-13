@@ -37,7 +37,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                 var userSession = await GetUserSessionAsync();
                 if (userSession != null)
                 {
-                    return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Type, c.Value)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
+                    return new ClaimsPrincipal(new ClaimsIdentity(userSession.Claims.Select(c => new Claim(c.Type, c.Value, c.ValueType, c.Issuer, c.OriginalIssuer)), userSession.AuthenticationType, openidClientPkceSettings.NameClaimType, openidClientPkceSettings.RoleClaimType));
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         private async Task<OidcUserSession> CreateUpdateSessionAsync(DateTimeOffset validUntil, ClaimsPrincipal claimsPrincipal, TokenResponse tokenResponse, string sessionState, string oidcDiscoveryUri, string clientId)
         {
             var claimsIdentity = claimsPrincipal.Identities.First();
-            var claimsList = claimsIdentity.Claims.Select(c => new ClaimValue { Type = c.Type, Value = c.Value }).ToList();
+            var claimsList = claimsIdentity.Claims.Select(c => new ClaimValue { Type = c.Type, Value = c.Value, ValueType = c.ValueType, Issuer = c.Issuer, OriginalIssuer = c.OriginalIssuer }).ToList();
 
             var userSession = new OidcUserSession
             {
