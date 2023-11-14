@@ -15,7 +15,7 @@ using System.Net.Http;
 using System.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
-#if !NET50 && !NET60 && !NET70 
+#if NETSTANDARD 
 using ITfoxtec.Identity.Models;
 #endif
 
@@ -169,7 +169,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     // https://github.com/dotnet/runtime/issues/40074
                     // .NET 7
                     // https://github.com/dotnet/designs/blob/main/accepted/2021/blazor-wasm-crypto.md#net-7-plan
-#if !NET50 && !NET60 && !NET70  
+#if NETSTANDARD  
                     var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(openidClientPkceState.OidcDiscoveryUri);
 
                     (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys.ToMSJsonWebKeys(), openidClientPkceState.ClientId,
@@ -242,7 +242,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                         // https://github.com/dotnet/runtime/issues/40074
                         // .NET 7
                         // https://github.com/dotnet/designs/blob/main/accepted/2021/blazor-wasm-crypto.md#net-7-plan
-#if !NET50 && !NET60 && !NET70 
+#if NETSTANDARD 
                         var oidcDiscoveryKeySet = await GetOidcDiscoveryKeysAsync(oidcDiscoveryUri);
 
                         (var idTokenPrincipal, _) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, clientId,
@@ -368,7 +368,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-#if !NET50 && !NET60 && !NET70
+#if NETSTANDARD
         private async Task<JsonWebKeySet> GetOidcDiscoveryKeysAsync(string oidcDiscoveryUri)
         {
             try
