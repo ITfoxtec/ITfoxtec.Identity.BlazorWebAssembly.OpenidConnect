@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0;net5.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
     <AssemblyName>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</AssemblyName>
     <RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
 
@@ -29,8 +29,11 @@ The component automatically handle token / session update with use of the refres
     <Version>1.6.5</Version>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ITfoxtec.Identity" Version="2.5.40" />
+  </ItemGroup>
+	
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="ITfoxtec.Identity" Version="2.5.36" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
@@ -50,7 +53,6 @@ The component automatically handle token / session update with use of the refres
   </PropertyGroup>
 	
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0'">
-    <PackageReference Include="ITfoxtec.Identity" Version="2.5.35" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.13" />
@@ -70,7 +72,6 @@ The component automatically handle token / session update with use of the refres
   </PropertyGroup>
 	
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="ITfoxtec.Identity" Version="2.5.35" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.24" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.24" />
@@ -90,7 +91,6 @@ The component automatically handle token / session update with use of the refres
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="ITfoxtec.Identity" Version="2.5.35" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.9" />
@@ -105,27 +105,6 @@ The component automatically handle token / session update with use of the refres
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591;1573</NoWarn>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="ITfoxtec.Identity" Version="2.5.2" />
-    <PackageReference Include="Blazored.SessionStorage" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.14" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.14" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.18" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
-    <DefineConstants>NETSTANDARD2;NETSTANDARD</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591;1573</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
   </PropertyGroup>
