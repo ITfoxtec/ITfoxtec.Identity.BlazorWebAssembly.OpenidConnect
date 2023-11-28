@@ -1,5 +1,6 @@
 ﻿using Blazored.SessionStorage;
 using ITfoxtec.Identity.Discovery;
+using ITfoxtec.Identity.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
@@ -22,18 +23,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             services.AddSingleton(openIDClientPkceSettings);
 
             services.AddScoped<OpenidConnectPkce>();
-#if NETSTANDARD
-            services.AddSingleton(sp => new OidcDiscoveryHandler(sp.GetService<HttpClient>()));
-#else
             services.AddSingleton(sp => new OidcDiscoveryHandler(sp.GetService<IHttpClientFactory>()));
-#endif
+            services.AddScoped(sp => new OidcHelper(sp.GetService<IHttpClientFactory>(), sp.GetService<OidcDiscoveryHandler>()));
 
             services.AddScoped<AuthenticationStateProvider, OidcAuthenticationStateProvider>();
-#if NETSTANDARD
-            services.AddTransient<AccessTokenMessageHandler>();            
-#else
             services.AddScoped<AccessTokenMessageHandler>();
-#endif
 
             services.AddOptions();
             services.AddAuthorizationCore();
