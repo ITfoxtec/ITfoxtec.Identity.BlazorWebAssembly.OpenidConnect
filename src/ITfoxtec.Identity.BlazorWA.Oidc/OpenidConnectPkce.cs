@@ -2,7 +2,6 @@
 using ITfoxtec.Identity.Discovery;
 using ITfoxtec.Identity.Helpers;
 using ITfoxtec.Identity.Messages;
-using ITfoxtec.Identity.Tokens;
 using ITfoxtec.Identity.Util;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -38,7 +37,15 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             this.authenticationStateProvider = authenticationStateProvider;
         }
 
-        public async Task LoginAsync(OpenidConnectPkceSettings openidClientPkceSettings = null)
+        /// <summary>
+        /// Initiate login.
+        /// </summary>
+        /// <param name="openidClientPkceSettings">OPTIONAL. set the client settings.</param>
+        /// <param name="loginHint">OPTIONAL. Hint to the Authorization Server about the login identifier the End-User might use to log in (if necessary). This hint can be used by an RP if it first asks the End-User for their e-mail address(or other identifier) and then wants to pass that value as a hint to the discovered authorization service.</param>
+        /// <param name="uiLocales">OPTIONAL. End-User's preferred languages and scripts for the user interface, represented as a space-separated list of BCP47 [RFC5646] language tag values, ordered by preference. For instance, the value "fr-CA fr en" represents a preference for French as spoken in Canada, then French (without region), followed by English (without region).</param>
+        /// <param name="prompt">OPTIONAL. Space delimited, case sensitive list of ASCII string values that specifies whether the Authorization Server prompts the End-User for reauthentication and consent.</param>       
+        /// <param name="acrValues">OPTIONAL. Requested Authentication Context Class Reference values. Space-separated string that specifies the acr values that the Authorization Server is being requested to use for processing this Authentication Request, with the values appearing in order of preference.</param>
+        public async Task LoginAsync(OpenidConnectPkceSettings openidClientPkceSettings = null, string loginHint = null, string uiLocales = null, string prompt = null, string acrValues = null)
         {
             try
             {
@@ -59,8 +66,25 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     RedirectUri = loginCallBackUri,
                     Scope = openidClientPkceSettings.AllScope.ToSpaceList(),
                     Nonce = nonce,
-                    State = state
+                    State = state                    
                 };
+                if (!loginHint.IsNullOrWhiteSpace())
+                {
+                    authenticationRequest.LoginHint = loginHint;
+                }
+                if (!uiLocales.IsNullOrWhiteSpace())
+                {
+                    authenticationRequest.UiLocales = uiLocales;
+                }
+                if (!prompt.IsNullOrWhiteSpace())
+                {
+                    authenticationRequest.Prompt = prompt;
+                }
+                if (!acrValues.IsNullOrWhiteSpace())
+                {
+                    authenticationRequest.AcrValues = acrValues;
+                }
+
                 var codeChallengeRequest = new CodeChallengeSecret
                 {
                     CodeChallenge = await codeVerifier.Sha256HashBase64urlEncodedAsync(),
@@ -261,6 +285,10 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             return httpClientFactory.CreateClient();
         }
 
+        /// <summary>
+        /// Initiate logout.
+        /// </summary>
+        /// <param name="openidClientPkceSettings">OPTIONAL. set the client settings.</param>
         public async Task LogoutAsync(OpenidConnectPkceSettings openidClientPkceSettings = null)
         {
             try
