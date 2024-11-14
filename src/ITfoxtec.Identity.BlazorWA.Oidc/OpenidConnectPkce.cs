@@ -178,7 +178,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
             request.Content = new FormUrlEncodedContent(requestDictionary);
 
-            var response = await GetHttpClient().SendAsync(request);
+            using var response = await GetHttpClient().SendAsync(request);
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -191,14 +191,11 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
                     var idTokenPrincipal = await oidcHelper.ValidateOidcWithUserInfoEndpoint(tokenResponse.IdToken, tokenResponse.AccessToken, openidClientPkceState.Nonce);
                     return (idTokenPrincipal, tokenResponse);
 
-                case HttpStatusCode.BadRequest:
+                default:
                     var resultBadRequest = await response.Content.ReadAsStringAsync();
                     var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
                     tokenResponseBadRequest.Validate(true);
-                    throw new Exception($"Error login call back, Bad request. StatusCode={response.StatusCode}");
-
-                default:
-                    throw new Exception($"Error login call back, Status Code not expected. StatusCode={response.StatusCode}");
+                    throw new Exception($"Error login call back, unexpected status code. StatusCode={response.StatusCode}");
             }
         }
 
