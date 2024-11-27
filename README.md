@@ -1,6 +1,7 @@
 # ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
 
+* **Support .NET 9.0**
 * **Support .NET 8.0**
 * **Support .NET 7.0**
 * **Support .NET 6.0**
