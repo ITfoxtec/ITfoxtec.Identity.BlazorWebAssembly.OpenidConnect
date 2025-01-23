@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>BlazorWebAssemblyOidcSample.Server</AssemblyName>
-    <RootNamespace>BlazorWebAssemblyOidcSample.Server</RootNamespace>
-  </PropertyGroup>
+		<AssemblyName>BlazorWebAssemblyOidcSample.Server</AssemblyName>
+		<RootNamespace>BlazorWebAssemblyOidcSample.Server</RootNamespace>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />

@@ -24,7 +24,7 @@ The component automatically handle token / session update with use of the refres
     <RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Copyright>© 2024 ITfoxtec</Copyright>
+    <Copyright>Copyright © 2025</Copyright>
     <AssemblyVersion>1.7.1</AssemblyVersion>
     <FileVersion>1.7.1</FileVersion>
     <Version>1.7.1</Version>
