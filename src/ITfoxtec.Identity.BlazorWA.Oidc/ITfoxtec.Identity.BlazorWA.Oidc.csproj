@@ -6,9 +6,8 @@
     <RootNamespace>ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RootNamespace>
 
     <Authors>Anders Revsgaard</Authors>
-    <Company>ITfoxtec</Company>
+    <Company>FoxIDs</Company>
     <Description>A JavaScript free OpenID Connect PKCE library for Blazor WebAssembly.
-
     
       Support .NET 9.0
       Support .NET 8.0
@@ -17,9 +16,11 @@
       Support .NET 5.0
 
 The received ID token is validated by the component in the client using the OpenID Provider (OP) discovery document.
-The component automatically handle token / session update with use of the refresh token if the offline_access scope is specified.</Description>
+The component automatically handle token / session update with use of the refresh token if the offline_access scope is specified.
+
+The company name ITfoxtec has changed to FoxIDs but the components will keep the ITfoxtec name as part of the component name for now.</Description>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
-    <PackageIconUrl>https://itfoxtec.com/favicon.ico</PackageIconUrl>
+    <PackageIconUrl>https://www.foxids.com/favicon.ico</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ITfoxtec/ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect</RepositoryUrl>
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
