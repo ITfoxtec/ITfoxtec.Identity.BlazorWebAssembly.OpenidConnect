@@ -2,6 +2,7 @@
 using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.Models;
 using ITfoxtec.Identity.Messages;
 using ITfoxtec.Identity.Helpers;
+using ITfoxtec.Identity.Discovery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -194,6 +195,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 
             try
             {
+                var discoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
+                discoveryHandler?.SetDefaultOidcDiscoveryUri(userSession.OidcDiscoveryUri);
                 await oidcHelper.ValidateAccessTokenWithUserInfoEndpoint(userSession.AccessToken);
             }
             catch (Exception ex)
