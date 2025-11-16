@@ -26,9 +26,9 @@ The company name ITfoxtec has changed to FoxIDs but the components will keep the
     <PackageTags>Blazor WebAssembly OpenID Connect (OIDC) Proof Key for Code Exchange (PKCE) id token access token refresh token</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>Copyright © 2025</Copyright>
-    <AssemblyVersion>1.7.1</AssemblyVersion>
-    <FileVersion>1.7.1</FileVersion>
-    <Version>1.7.1</Version>
+    <AssemblyVersion>1.8.0</AssemblyVersion>
+    <FileVersion>1.8.0</FileVersion>
+    <Version>1.8.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

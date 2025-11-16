@@ -1,27 +1,43 @@
 ﻿using Blazored.SessionStorage;
 using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.Models;
 using ITfoxtec.Identity.Messages;
+using ITfoxtec.Identity.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
-    public class OidcAuthenticationStateProvider : AuthenticationStateProvider
+    public class OidcAuthenticationStateProvider : AuthenticationStateProvider, IAsyncDisposable
     {
         private const string userSessionKey = "user_session";
         private readonly IServiceProvider serviceProvider;
         private readonly OpenidConnectPkceSettings openidClientPkceSettings;
         private readonly ISessionStorageService sessionStorage;
+        private readonly OidcHelper oidcHelper;
+        private readonly CancellationTokenSource validationCancellationTokenSource = new();
+        private readonly Task validationMonitorTask;
+        private readonly TimeSpan? validationInterval;
+        private bool raisingLogoutEvent;
 
-        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage)
+        public event EventHandler LogoutDetected;
+
+        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage, OidcHelper oidcHelper)
         {
             this.serviceProvider = serviceProvider;
             this.openidClientPkceSettings = openidClientPkceSettings;
             this.sessionStorage = sessionStorage;
+            this.oidcHelper = oidcHelper;
+
+            if (openidClientPkceSettings.SessionValidationIntervalSeconds > 0)
+            {
+                validationInterval = TimeSpan.FromSeconds(openidClientPkceSettings.SessionValidationIntervalSeconds);
+                validationMonitorTask = MonitorAccessTokenAsync(validationCancellationTokenSource.Token);
+            }
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -55,6 +71,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var userSession = await GetUserSessionAsync(readInvalidSession);
             return userSession?.IdToken;
         }
+
         public async Task<string> GetAccessToken(bool readInvalidSession = false)
         {
             var userSession = await GetUserSessionAsync(readInvalidSession);
@@ -142,6 +159,91 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             {
                 NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
             }
+        }
+        private async Task MonitorAccessTokenAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(validationInterval.Value, cancellationToken);
+                    await ValidateAccessTokenWithUserInfoAsync();
+                }
+                catch (TaskCanceledException)
+                {
+                }
+                catch
+                {
+                    await HandleLogoutAsync();
+                }
+            }
+        }
+
+        private async Task ValidateAccessTokenWithUserInfoAsync()
+        {
+            var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
+            if (userSession == null)
+            {
+                return;
+            }
+
+            if (userSession.AccessToken.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                await oidcHelper.ValidateAccessTokenWithUserInfoEndpoint(userSession.AccessToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Access token validation: {ex.Message}");
+                await HandleLogoutAsync();
+            }
+        }
+
+        private async Task HandleLogoutAsync()
+        {
+            await DeleteSessionAsync();
+            RaiseLogoutDetected();
+        }
+
+        private void RaiseLogoutDetected()
+        {
+            if (raisingLogoutEvent)
+            {
+                return;
+            }
+
+            try
+            {
+                raisingLogoutEvent = true;
+                LogoutDetected?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                raisingLogoutEvent = false;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            validationCancellationTokenSource.Cancel();
+            if (validationMonitorTask != null)
+            {
+                try
+                {
+                    await validationMonitorTask;
+                }
+                catch (TaskCanceledException)
+                {
+                }
+                catch
+                {
+                }
+            }
+            validationCancellationTokenSource.Dispose();
         }
     }
 }
