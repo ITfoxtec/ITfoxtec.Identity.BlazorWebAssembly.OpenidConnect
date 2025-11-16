@@ -26,7 +26,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             services.AddSingleton(sp => new OidcDiscoveryHandler(sp.GetService<IHttpClientFactory>()));
             services.AddScoped(sp => new OidcHelper(sp.GetService<IHttpClientFactory>(), sp.GetService<OidcDiscoveryHandler>()));
 
-            services.AddScoped<AuthenticationStateProvider, OidcAuthenticationStateProvider>();
+            services.AddScoped<OidcAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<OidcAuthenticationStateProvider>());
             services.AddScoped<AccessTokenMessageHandler>();
 
             services.AddOptions();

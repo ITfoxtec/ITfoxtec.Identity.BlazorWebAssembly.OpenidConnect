@@ -1,0 +1,40 @@
+@implements IDisposable
+@inject OidcAuthenticationStateProvider AuthenticationStateProvider
+@inject OpenidConnectPkce OpenidConnectPkce
+
+@if (showPopup)
+{
+    <div class="logout-popup">
+        <div class="logout-popup__content">
+            <h2>You have been signed out</h2>
+            <p>Your session ended or was invalidated. Please sign in again.</p>
+            <button class="btn btn-primary" @onclick="LoginAsync">Login</button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool showPopup;
+
+    protected override void OnInitialized()
+    {
+        AuthenticationStateProvider.LogoutDetected += HandleLogoutDetected;
+    }
+
+    private void HandleLogoutDetected(object sender, EventArgs args)
+    {
+        showPopup = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoginAsync()
+    {
+        showPopup = false;
+        await OpenidConnectPkce.LoginAsync();
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.LogoutDetected -= HandleLogoutDetected;
+    }
+}
