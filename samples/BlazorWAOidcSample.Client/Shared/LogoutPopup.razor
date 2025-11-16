@@ -1,5 +1,5 @@
 @implements IDisposable
-@inject OidcAuthenticationStateProvider AuthenticationStateProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject OpenidConnectPkce OpenidConnectPkce
 
 @if (showPopup)
@@ -18,7 +18,7 @@
 
     protected override void OnInitialized()
     {
-        AuthenticationStateProvider.LogoutDetected += HandleLogoutDetected;
+        (AuthenticationStateProvider as OidcAuthenticationStateProvider).LogoutDetected += HandleLogoutDetected;
     }
 
     private void HandleLogoutDetected(object sender, EventArgs args)
@@ -35,6 +35,6 @@
 
     public void Dispose()
     {
-        AuthenticationStateProvider.LogoutDetected -= HandleLogoutDetected;
+        (AuthenticationStateProvider as OidcAuthenticationStateProvider).LogoutDetected -= HandleLogoutDetected;
     }
 }
