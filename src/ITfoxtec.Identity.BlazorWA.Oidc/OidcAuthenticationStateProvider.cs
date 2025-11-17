@@ -2,43 +2,36 @@
 using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.Models;
 using ITfoxtec.Identity.Messages;
 using ITfoxtec.Identity.Helpers;
-using ITfoxtec.Identity.Discovery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
-    public class OidcAuthenticationStateProvider : AuthenticationStateProvider, IAsyncDisposable
+    public class OidcAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
     {
         private const string userSessionKey = "user_session";
         private readonly IServiceProvider serviceProvider;
         private readonly OpenidConnectPkceSettings openidClientPkceSettings;
         private readonly ISessionStorageService sessionStorage;
         private readonly OidcHelper oidcHelper;
-        private readonly CancellationTokenSource validationCancellationTokenSource = new();
-        private readonly Task validationMonitorTask;
-        private readonly TimeSpan? validationInterval;
+        private readonly OidcSessionValidationService sessionValidationService;
         private bool raisingLogoutEvent;
 
         public event EventHandler LogoutDetected;
 
-        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage, OidcHelper oidcHelper)
+        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage, OidcHelper oidcHelper, OidcSessionValidationService sessionValidationService)
         {
             this.serviceProvider = serviceProvider;
             this.openidClientPkceSettings = openidClientPkceSettings;
             this.sessionStorage = sessionStorage;
             this.oidcHelper = oidcHelper;
+            this.sessionValidationService = sessionValidationService;
 
-            if (openidClientPkceSettings.SessionValidationIntervalSeconds > 0)
-            {
-                validationInterval = TimeSpan.FromSeconds(openidClientPkceSettings.SessionValidationIntervalSeconds);
-                validationMonitorTask = MonitorAccessTokenAsync(validationCancellationTokenSource.Token);
-            }
+            this.sessionValidationService.RegisterProvider(this);
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -79,7 +72,7 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             return userSession?.AccessToken;
         }
 
-        protected async Task<OidcUserSession> GetUserSessionAsync(bool readInvalidSession = false)
+        protected internal async Task<OidcUserSession> GetUserSessionAsync(bool readInvalidSession = false)
         {
             var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
             if (userSession != null)
@@ -156,57 +149,13 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             await sessionStorage.RemoveItemAsync(userSessionKey);
 
-            if(notify)
+            if (notify)
             {
                 NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
             }
         }
-        private async Task MonitorAccessTokenAsync(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    await Task.Delay(validationInterval.Value, cancellationToken);
-                    await ValidateAccessTokenWithUserInfoAsync();
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                catch
-                {
-                    await HandleLogoutAsync();
-                }
-            }
-        }
 
-        private async Task ValidateAccessTokenWithUserInfoAsync()
-        {
-            var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
-            if (userSession == null)
-            {
-                return;
-            }
-
-            if (userSession.AccessToken.IsNullOrEmpty())
-            {
-                return;
-            }
-
-            try
-            {
-                var discoveryHandler = serviceProvider.GetService<OidcDiscoveryHandler>();
-                discoveryHandler?.SetDefaultOidcDiscoveryUri(userSession.OidcDiscoveryUri);
-                await oidcHelper.ValidateAccessTokenWithUserInfoEndpoint(userSession.AccessToken);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Access token validation: {ex.Message}");
-                await HandleLogoutAsync();
-            }
-        }
-
-        private async Task HandleLogoutAsync()
+        internal async Task HandleLogoutAsync()
         {
             await DeleteSessionAsync();
             RaiseLogoutDetected();
@@ -230,23 +179,9 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
-            validationCancellationTokenSource.Cancel();
-            if (validationMonitorTask != null)
-            {
-                try
-                {
-                    await validationMonitorTask;
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                catch
-                {
-                }
-            }
-            validationCancellationTokenSource.Dispose();
+            sessionValidationService.UnregisterProvider(this);
         }
     }
 }
