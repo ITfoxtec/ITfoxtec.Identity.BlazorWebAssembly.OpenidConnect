@@ -113,6 +113,9 @@ Add trusted domains as _AuthorizedUris_ in the _IdentitySettings_ configuration.
 }
 ```
 
+### Periodic access token validation
+Set `SessionValidationIntervalSeconds` in `IdentitySettings` (defaults to 300; set to 0 to disable). When enabled, `OidcAuthenticationStateProvider` periodically calls the UserInfo endpoint via `OidcHelper.ValidateAccessTokenWithUserInfoEndpoint`. If validation fails, the provider clears the session and raises the logout event so the UI can prompt the user to sign in again.
+
 
 ### Add call back page
 Add a _Authentication.razor_ call back page in the _Pages_ folder with the following content.

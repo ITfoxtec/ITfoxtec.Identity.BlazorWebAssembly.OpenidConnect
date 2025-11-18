@@ -87,5 +87,10 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         /// Tokens expires before actual expiration time, in seconds. Default 30 seconds.
         /// </summary>
         public int TokensExpiresBefore { get; set; } = 30;
+
+        /// <summary>
+        /// Interval in seconds for validating the access token through the UserInfo endpoint. Set to 0 to disable. Default disabled.
+        /// </summary>
+        public int SessionValidationIntervalSeconds { get; set; } = 0;
     }
 }

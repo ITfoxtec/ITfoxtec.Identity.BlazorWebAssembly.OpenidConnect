@@ -1,6 +1,7 @@
 ﻿using Blazored.SessionStorage;
 using ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect.Models;
 using ITfoxtec.Identity.Messages;
+using ITfoxtec.Identity.Helpers;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -10,18 +11,27 @@ using System.Threading.Tasks;
 
 namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
 {
-    public class OidcAuthenticationStateProvider : AuthenticationStateProvider
+    public class OidcAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
     {
         private const string userSessionKey = "user_session";
         private readonly IServiceProvider serviceProvider;
         private readonly OpenidConnectPkceSettings openidClientPkceSettings;
         private readonly ISessionStorageService sessionStorage;
+        private readonly OidcHelper oidcHelper;
+        private readonly OidcSessionValidationService sessionValidationService;
+        private bool raisingLogoutEvent;
 
-        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage)
+        public event EventHandler LogoutDetected;
+
+        public OidcAuthenticationStateProvider(IServiceProvider serviceProvider, OpenidConnectPkceSettings openidClientPkceSettings, ISessionStorageService sessionStorage, OidcHelper oidcHelper, OidcSessionValidationService sessionValidationService)
         {
             this.serviceProvider = serviceProvider;
             this.openidClientPkceSettings = openidClientPkceSettings;
             this.sessionStorage = sessionStorage;
+            this.oidcHelper = oidcHelper;
+            this.sessionValidationService = sessionValidationService;
+
+            this.sessionValidationService.RegisterProvider(this);
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -55,13 +65,14 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
             var userSession = await GetUserSessionAsync(readInvalidSession);
             return userSession?.IdToken;
         }
+
         public async Task<string> GetAccessToken(bool readInvalidSession = false)
         {
             var userSession = await GetUserSessionAsync(readInvalidSession);
             return userSession?.AccessToken;
         }
 
-        protected async Task<OidcUserSession> GetUserSessionAsync(bool readInvalidSession = false)
+        protected internal async Task<OidcUserSession> GetUserSessionAsync(bool readInvalidSession = false)
         {
             var userSession = await sessionStorage.GetItemAsync<OidcUserSession>(userSessionKey);
             if (userSession != null)
@@ -138,10 +149,39 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         {
             await sessionStorage.RemoveItemAsync(userSessionKey);
 
-            if(notify)
+            if (notify)
             {
                 NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
             }
+        }
+
+        internal async Task HandleLogoutAsync()
+        {
+            await DeleteSessionAsync();
+            RaiseLogoutDetected();
+        }
+
+        private void RaiseLogoutDetected()
+        {
+            if (raisingLogoutEvent)
+            {
+                return;
+            }
+
+            try
+            {
+                raisingLogoutEvent = true;
+                LogoutDetected?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                raisingLogoutEvent = false;
+            }
+        }
+
+        public void Dispose()
+        {
+            sessionValidationService.UnregisterProvider(this);
         }
     }
 }
