@@ -89,8 +89,8 @@ namespace ITfoxtec.Identity.BlazorWebAssembly.OpenidConnect
         public int TokensExpiresBefore { get; set; } = 30;
 
         /// <summary>
-        /// Interval in seconds for validating the access token through the UserInfo endpoint. Set to 0 to disable.
+        /// Interval in seconds for validating the access token through the UserInfo endpoint. Set to 0 to disable. Default disabled.
         /// </summary>
-        public int SessionValidationIntervalSeconds { get; set; } = 300;
+        public int SessionValidationIntervalSeconds { get; set; } = 0;
     }
 }
