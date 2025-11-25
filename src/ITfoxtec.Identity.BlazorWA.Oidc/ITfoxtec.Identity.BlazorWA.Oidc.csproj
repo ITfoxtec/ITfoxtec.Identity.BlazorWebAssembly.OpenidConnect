@@ -33,7 +33,7 @@ The company name ITfoxtec has changed to FoxIDs but the components will keep the
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITfoxtec.Identity" Version="2.15.0" />
+    <PackageReference Include="ITfoxtec.Identity" Version="2.16.0" />
   </ItemGroup>
 	
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0'">
