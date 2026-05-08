@@ -30,6 +30,8 @@ The company name ITfoxtec has changed to FoxIDs but the components will keep the
     <AssemblyVersion>1.9.1</AssemblyVersion>
     <FileVersion>1.9.1</FileVersion>
     <Version>1.9.1</Version>
+	<NuGetAudit>true</NuGetAudit>
+	<NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <ItemGroup>
