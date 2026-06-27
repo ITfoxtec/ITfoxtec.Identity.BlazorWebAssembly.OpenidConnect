@@ -1,0 +1,94 @@
+name: Release NuGet package
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  pack-and-publish:
+    name: Pack and publish
+    runs-on: windows-latest
+
+    env:
+      PROJECT_PATH: src/ITfoxtec.Identity.BlazorWA.Oidc/ITfoxtec.Identity.BlazorWA.Oidc.csproj
+      PACKAGE_OUTPUT: artifacts/packages
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate release version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content $env:PROJECT_PATH
+          $properties = $project.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1
+
+          if (-not $properties) {
+            throw "Could not find <Version> in $env:PROJECT_PATH."
+          }
+
+          $componentVersion = $properties.Version
+          $releaseVersion = "${{ github.event.release.tag_name }}"
+          $isGitHubPrerelease = [System.Convert]::ToBoolean("${{ github.event.release.prerelease }}")
+          $isNuGetPrerelease = $componentVersion -match "-"
+
+          if ($releaseVersion -ne $componentVersion) {
+            throw "GitHub release tag '$releaseVersion' does not match component version '$componentVersion'."
+          }
+
+          if ($isGitHubPrerelease -and -not $isNuGetPrerelease) {
+            throw "GitHub release is marked as prerelease, but component version '$componentVersion' is a stable NuGet version. Use a prerelease suffix, e.g. '$componentVersion-beta.1'."
+          }
+
+          if (-not $isGitHubPrerelease -and $isNuGetPrerelease) {
+            throw "GitHub release is not marked as prerelease, but component version '$componentVersion' is a NuGet prerelease version."
+          }
+
+          foreach ($propertyName in @("AssemblyVersion", "FileVersion")) {
+            $propertyVersion = $properties.$propertyName
+            if ($propertyVersion -and $propertyVersion -ne $componentVersion) {
+              throw "<$propertyName> '$propertyVersion' does not match component version '$componentVersion'."
+            }
+          }
+
+          "Release version '$releaseVersion' matches the component version."
+
+      - name: Restore
+        run: dotnet restore ITfoxtec.Identity.BlazorWA.Oidc.sln
+
+      - name: Build
+        run: dotnet build ITfoxtec.Identity.BlazorWA.Oidc.sln --configuration Release --no-restore
+
+      - name: Pack
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force $env:PACKAGE_OUTPUT | Out-Null
+          dotnet pack $env:PROJECT_PATH --configuration Release --no-build --output $env:PACKAGE_OUTPUT
+
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish to NuGet.org
+        shell: pwsh
+        run: |
+          Get-ChildItem $env:PACKAGE_OUTPUT -Filter *.nupkg |
+            ForEach-Object {
+              dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --skip-duplicate
+            }
+
+      - name: Upload packages to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/packages/*
