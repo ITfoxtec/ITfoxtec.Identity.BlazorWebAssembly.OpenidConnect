@@ -14,3 +14,13 @@ Automated tests are currently light; lean on the sample apps for manual verifica
 
 ## Security & Configuration Tips
 Do not commit real `IdentitySettings` secrets; rely on user secrets or environment variables. Keep trusted URIs inside `AuthorizedUris`, validate callback URLs, and ensure new dependencies do not reintroduce JavaScript-based token handling. Review sample configurations whenever you change scopes or FoxIDs endpoints.
+
+## Release / NuGet
+- Releases are published through `.github/workflows/release-nuget.yml` when a GitHub Release is published.
+- The GitHub release must target `main`; make sure `main` contains the release commit before publishing.
+- The GitHub release tag must match `<Version>` in `src/ITfoxtec.Identity.BlazorWA.Oidc/ITfoxtec.Identity.BlazorWA.Oidc.csproj` exactly.
+- `<AssemblyVersion>` and `<FileVersion>` must match `<Version>`.
+- GitHub prerelease status must match the NuGet version: prereleases require a SemVer suffix such as `1.9.3-beta.1`; stable releases must not have a suffix.
+- NuGet publishing uses Trusted Publishing through `NuGet/login@v1`; do not add a long-lived NuGet API key.
+- The GitHub Actions secret `NUGET_USER` must contain the NuGet package owner name.
+- NuGet packages cannot be overwritten. If a version has been published, bump the package version before preparing another release.
